@@ -1,0 +1,48 @@
+{
+	"name": "iconv-corefoundation",
+	"version": "0.0.0",
+	"description": "Character set conversion using the macOS CoreFoundation API",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
+	"scripts": {
+		"prepare": "tsc",
+		"test": "mocha -r ts-node/register test/**.spec.ts"
+	},
+	"repository": "argv-minus-one/iconv-corefoundation",
+	"keywords": [
+		"corefoundation",
+		"iconv",
+		"convert",
+		"charset",
+		"mac"
+	],
+	"author": "argv-minus-one",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/argv-minus-one/iconv-corefoundation/issues"
+	},
+	"homepage": "https://github.com/argv-minus-one/iconv-corefoundation#readme",
+	"os": [
+		"darwin"
+	],
+	"engines": {
+		"node": "^8.11.2 || >=10"
+	},
+	"devDependencies": {
+		"@types/bindings": "^1.3.0",
+		"@types/chai": "^4.1.7",
+		"@types/cli-truncate": "^1.1.0",
+		"@types/mocha": "^5.2.6",
+		"@types/node": "^12.0.2",
+		"chai": "^4.2.0",
+		"chai-bytes": "^0.1.2",
+		"mocha": "^6.1.4",
+		"ts-node": "^8.1.0",
+		"typescript": "^3.4.5"
+	},
+	"dependencies": {
+		"bindings": "^1.5.0",
+		"cli-truncate": "^1.1.0",
+		"node-addon-api": "^1.6.3"
+	}
+}

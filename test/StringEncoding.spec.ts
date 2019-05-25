@@ -1,0 +1,184 @@
+import * as Chai from "chai";
+import { inspect } from "util";
+import { DecodeOptions, EncodeOptions, NotRepresentableError, StringEncoding } from "..";
+import ChaiBytes = require("chai-bytes");
+
+Chai.use(ChaiBytes);
+const { assert } = Chai;
+
+describe("StringEncoding", () => {
+	{
+		const testEncodings: Array<{
+			testingName: string;
+			se: StringEncoding;
+			ref: {
+				cfStringEncoding: number;
+				ianaCharSetName: string;
+				windowsCodepage?: number | null | Array<number | null>;
+				nsStringEncoding?: number | null | Array<number | null>;
+				name: RegExp;
+				text?: Array<{
+					comment?: string;
+					string: string;
+					bytes: Buffer;
+					encodeOptions?: EncodeOptions | null; // If null, do not attempt encoding.
+					decodeOptions?: DecodeOptions | null; // If null, do not attempt decoding.
+				}>;
+				unrepresentable?: string[];
+			};
+		}> = [
+			{
+				testingName: "ASCII",
+				se: StringEncoding.byIANACharSetName("ascii"),
+				ref: {
+					cfStringEncoding: 0x0600,
+					ianaCharSetName: "US-ASCII",
+					windowsCodepage: 20127,
+					nsStringEncoding: 1,
+					name: /ASCII/i,
+					text: [{
+						comment: "with loss byte '?'",
+						string: "Hello, world¡",
+						bytes: Buffer.from("Hello, world?", "ascii"),
+						encodeOptions: {
+							lossByte: 63
+						},
+						decodeOptions: null
+					}],
+					unrepresentable: ["Hello, world¡"]
+				}
+			},
+			{
+				testingName: "MacRoman",
+				se: StringEncoding.byNSStringEncoding(30),
+				ref: {
+					cfStringEncoding: 0,
+					ianaCharSetName: "macintosh",
+					windowsCodepage: 10000,
+					nsStringEncoding: 30,
+					name: /Mac.*Roman|Roman.*Mac/i,
+					text: [{
+						string: "Hello, world¡",
+						bytes: Buffer.from([72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 193])
+					}]
+				}
+			},
+			{
+				testingName: "UTF-16LE",
+				se: StringEncoding.byCFStringEncoding(0x14000100),
+				ref: {
+					cfStringEncoding: 0x14000100,
+					ianaCharSetName: "UTF-16LE",
+					windowsCodepage: [1200, null],
+					nsStringEncoding: 0x94000100,
+					name: /UTF-?16/i,
+					text: [{
+						string: "👍",
+						bytes: Buffer.from([61, 216, 77, 220])
+					}]
+				}
+			},
+			{
+				testingName: "UTF-8",
+				se: StringEncoding.byWindowsCodepage(65001),
+				ref: {
+					cfStringEncoding: 0x08000100,
+					ianaCharSetName: "UTF-8",
+					windowsCodepage: 65001,
+					nsStringEncoding: 4,
+					name: /UTF-?8/i
+				}
+			},
+			{
+				testingName: "MacJapanese",
+				se: StringEncoding.byCFStringEncoding(1),
+				ref: {
+					cfStringEncoding: 1,
+					ianaCharSetName: "x-mac-japanese",
+					windowsCodepage: 10001,
+					name: /Mac.*Japanese|Japanese.*Mac/i,
+					text: [{
+						string: "同意します~",
+						bytes: Buffer.from("k6+I04K1gtyCt34=", "base64")
+					}]
+				}
+			},
+			{
+				testingName: "Shift JIS",
+				se: StringEncoding.byCFStringEncoding(0x0A01),
+				ref: {
+					cfStringEncoding: 0x0A01,
+					ianaCharSetName: "Shift_JIS",
+					name: /S(hift)?.*JIS/i,
+					text: [{
+						string: "同意します‾",
+						bytes: Buffer.from("k6+I04K1gtyCt34=", "base64")
+					}]
+				}
+			},
+			{
+				testingName: "MacInuit",
+				se: StringEncoding.byCFStringEncoding(0xEC),
+				ref: {
+					cfStringEncoding: 0xEC,
+					ianaCharSetName: "x-mac-inuit",
+					windowsCodepage: null,
+					name: /Mac.*Inuit|Inuit.*Mac/i
+				}
+			}
+		];
+
+		for (const {testingName, se, ref} of testEncodings)
+		describe(`(${testingName})`, () => {
+			it(`should have cfStringEncoding = ${ref.cfStringEncoding}`, () => {
+				assert.strictEqual(se.cfStringEncoding, ref.cfStringEncoding);
+			});
+
+			it(`should have ianaCharSetName = ${ref.ianaCharSetName}`, () => {
+				assert.strictEqual(se.ianaCharSetName.toLowerCase(), ref.ianaCharSetName.toLowerCase());
+			});
+
+			if (ref.windowsCodepage !== undefined)
+			it(`should have Windows codepage ${ref.windowsCodepage}`, () => {
+				if (Array.isArray(ref.windowsCodepage))
+					assert.include(ref.windowsCodepage, se.windowsCodepage);
+				else
+					assert.strictEqual(se.windowsCodepage, ref.windowsCodepage);
+			});
+
+			if (ref.nsStringEncoding !== undefined)
+			it(`should have NSStringEncoding = ${ref.nsStringEncoding}`, () => {
+				if (Array.isArray(ref.nsStringEncoding))
+					assert.include(ref.nsStringEncoding, se.nsStringEncoding);
+				else
+					assert.strictEqual(se.nsStringEncoding, ref.nsStringEncoding);
+			});
+
+			it(`should have a name matching ${ref.name}`, () => {
+				assert.notStrictEqual(se.name.search(ref.name), -1, `"${se.name}" does not match ${ref.name}`);
+			});
+
+			if (ref.text)
+			for (const {comment, string, bytes, encodeOptions, decodeOptions} of ref.text) {
+				if (encodeOptions !== null)
+				it(`should encode ${inspect(string)} to ${inspect(bytes)}${comment ? ` (${comment})` : ""}`, () => {
+					const result = Buffer.from(se.encode(string, encodeOptions));
+					assert.equalBytes(result, bytes);
+				});
+
+				if (decodeOptions !== null)
+				it(`should decode ${inspect(bytes)} to ${inspect(string)}${comment ? ` (${comment})` : ""}`, () => {
+					const result = se.decode(bytes, decodeOptions);
+					assert.strictEqual(result, string);
+				});
+			}
+
+			if (ref.unrepresentable)
+			for (const unrepresentable of ref.unrepresentable) {
+				it(`should fail to encode ${inspect(unrepresentable)} because it is not representable`, () => {
+					assert.throws(() => se.encode(unrepresentable), NotRepresentableError);
+				});
+			}
+		});
+	}
+});
