@@ -26,7 +26,6 @@ class StringEncodingClass {
 	}
 
 	static StringEncodingClass *ForMethodCall(const Napi::CallbackInfo &info);
-	static StringEncodingClass *ForJsCtor(Napi::Function ctor);
 };
 
 class StringEncoding : public Napi::ObjectWrap<StringEncoding> {

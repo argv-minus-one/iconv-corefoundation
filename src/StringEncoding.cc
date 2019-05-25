@@ -47,25 +47,6 @@ StringEncodingClass *StringEncodingClass::ForMethodCall(const Napi::CallbackInfo
 	return ptr;
 }
 
-StringEncodingClass *StringEncodingClass::ForJsCtor(Napi::Function ctor) {
-	class Invalid {};
-
-	try {
-		Napi::Value prop = ctor[CLASS_DATA_KEY];
-		if (!prop.IsExternal())
-			throw Invalid();
-
-		auto ptr = prop.As<Napi::External<StringEncodingClass>>().Data();
-		if (ptr->magic != MAGIC)
-			throw Invalid();
-
-		return ptr;
-	}
-	catch (Invalid) {
-		throw Napi::TypeError::New(ctor.Env(), "Supplied object is not the StringEncoding constructor.");
-	}
-}
-
 StringEncoding *StringEncodingClass::New(Napi::Env env, CFStringEncoding encoding) const {
 	StringEncoding::ConstructorCookie cookie(encoding);
 	auto extCookie = Napi::External<StringEncoding::ConstructorCookie>::New(env, &cookie);
