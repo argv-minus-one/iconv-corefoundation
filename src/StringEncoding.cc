@@ -43,7 +43,7 @@ StringEncodingClass::StringEncodingClass(Napi::Env env, Iccf *iccf)
 StringEncodingClass *StringEncodingClass::ForMethodCall(const Napi::CallbackInfo &info) {
 	auto ptr = reinterpret_cast<StringEncodingClass *>(info.Data());
 	if (ptr->magic != MAGIC)
-		throw Napi::TypeError::New(info.Env(), "StringEncoding method was called on invalid receiver object.");
+		throw Napi::Error::New(info.Env(), "Invalid callback data passed to StringEncodingClass::ForMethodCall! This is a bug in iconv-corefoundation.");
 	return ptr;
 }
 
