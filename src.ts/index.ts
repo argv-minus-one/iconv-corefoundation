@@ -136,7 +136,7 @@ export declare function encodeSmallest(content: string, options?: EncodeOptions)
 export declare function encodeFastest(content: string, options: EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
 export declare function encodeFastest(content: string, options?: EncodeOptions): TextAndEncoding;
 
-export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding): ArrayBuffer;
+export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding): Buffer;
 
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): TextAndEncoding;
@@ -159,19 +159,15 @@ export function encodingExists(encoding: string): boolean {
 	return StringEncoding.byIANACharSetName(encoding) !== null;
 }
 
-function bogusEncoding(...params: ConstructorParameters<typeof iccfErrors.UnrecognizedEncodingError>): never {
-	throw new iccfErrors.UnrecognizedEncodingError(...params);
-}
-
 export function decode(buffer: BufferLike, encoding: string | StringEncoding, options?: DecodeOptions): string {
 	if (typeof encoding === "string")
-		encoding = StringEncoding.byIANACharSetName(encoding) || bogusEncoding(encoding, "IANA charset name");
+		encoding = StringEncoding.byIANACharSetName(encoding);
 	return encoding.decode(buffer, options);
 }
 
-export function encode(content: string, encoding: string | StringEncoding, options?: EncodeOptions): ArrayBuffer {
+export function encode(content: string, encoding: string | StringEncoding, options?: EncodeOptions): Buffer {
 	if (typeof encoding === "string")
-		encoding = StringEncoding.byIANACharSetName(encoding) || bogusEncoding(encoding, "IANA charset name");
+		encoding = StringEncoding.byIANACharSetName(encoding);
 	return encoding.encode(content, options);
 }
 
