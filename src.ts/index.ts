@@ -19,8 +19,8 @@ export type BufferLike = Buffer | Uint8Array | DataView | ArrayBufferLike;
 
 /**
  * A character encoding, known to the Core Foundation framework.
-	 *
-	 * @see [`CFStringEncoding`](https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc)
+ *
+ * @see [`CFStringEncoding`](https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc)
  */
 export declare class StringEncoding {
 	/**
