@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include "napi.hh"
 #include "StringEncoding.hh"
 
