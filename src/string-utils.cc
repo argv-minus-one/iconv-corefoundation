@@ -7,7 +7,7 @@ static constexpr const bool isBigEndian = htonl(1) == 1;
 
 static constexpr const CFAllocatorRef &cfAlloc = kCFAllocatorDefault;
 
-CFStringHandle NapiStringToCFString(Napi::String &string) {
+CFStringHandle NapiStringToCFString(const Napi::String string) {
 	// Napi::String::Utf16Value would be painfully inefficient for what we're doing: using it would involve *three* copies of the string (JS VM to std::u16string to CFString) per call to this function! Using raw N-API, we can reduce it to one copy (JS VM to buffer, then transfer ownership of buffer to CFString). I'd rather have zero copies, but N-API makes that impossible, unfortunately.
 	const napi_env env = string.Env();
 	size_t length;

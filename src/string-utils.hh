@@ -7,7 +7,7 @@
 /**
  * Makes a `CFStringRef` from the characters in the given `Napi::String`, making 1 to 2 copies.
  */
-CFStringHandle NapiStringToCFString(Napi::String &string);
+CFStringHandle NapiStringToCFString(const Napi::String string);
 
 /**
  * Makes a `Napi::String` from the characters in the given `CFString`, making 1 to 2 copies.
