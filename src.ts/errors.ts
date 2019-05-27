@@ -3,10 +3,9 @@ import cliTruncate = require("cli-truncate");
 
 // These are imported as types only, in order to avoid run-time import cycles.
 type StringEncoding = import("./index").StringEncoding;
-type BufferLike = import("./index").BufferLike;
 
 export class NotRepresentableError extends Error {
-	constructor(string: string | BufferLike, encoding: StringEncoding) {
+	constructor(string: unknown, encoding: StringEncoding) {
 		super(`Not fully representable in ${encoding}: ${inspect(typeof string === "string" ? cliTruncate(string, 15) : string)}`);
 	}
 }
