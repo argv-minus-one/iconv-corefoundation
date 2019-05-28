@@ -18,6 +18,4 @@ CFStringHandle NapiStringToCFString(const Napi::String string);
  */
 Napi::String CFStringToNapiString(CFStringRef string, Napi::Env env);
 
-static constexpr const CFAllocatorRef &cfAlloc = kCFAllocatorDefault;
-
 #include "iccf.hh"

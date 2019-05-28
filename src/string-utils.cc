@@ -27,7 +27,7 @@ CFStringHandle NapiStringToCFString(const Napi::String string) {
 		byteLengthWithNull = lengthWithNull * 2;
 
 	// Allocate memory for string.
-	auto buf = static_cast<char16_t *>(CFAllocatorAllocate(cfAlloc, byteLengthWithNull, 0));
+	auto buf = static_cast<char16_t *>(CFAllocatorAllocate(kCFAllocatorDefault, byteLengthWithNull, 0));
 
 	try {
 		// Copy string contents.
@@ -41,12 +41,12 @@ CFStringHandle NapiStringToCFString(const Napi::String string) {
 
 		// Make CFString.
 		auto cfstr = CFStringCreateWithBytesNoCopy(
-			cfAlloc,
+			kCFAllocatorDefault,
 			reinterpret_cast<UInt8 *>(buf),
 			byteLength,
 			kCFStringEncodingUTF16LE,
 			true,
-			cfAlloc // This tells it to deallocate `buf` when ready. In other words, this transfers ownership of the buffer to the new CFString.
+			kCFAllocatorDefault // This tells it to deallocate `buf` when ready. In other words, this transfers ownership of the buffer to the new CFString.
 		);
 
 		if (cfstr == nullptr) {
@@ -59,7 +59,7 @@ CFStringHandle NapiStringToCFString(const Napi::String string) {
 	}
 	catch (...) {
 		// If any of that failed, we need to free the allocated buffer memory ourselves.
-		CFAllocatorDeallocate(cfAlloc, buf);
+		CFAllocatorDeallocate(kCFAllocatorDefault, buf);
 		throw;
 	}
 }

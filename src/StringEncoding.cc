@@ -156,7 +156,7 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value buffer) const {
 	// There's no getting around it: we have to copy the buffer here. There is a CFStringCreateWithBytesNoCopy function, but this may result in the buffer's contents being overwritten, or the whole thing being garbage-collected before the CFString is freed (which would leave the CFString with a dangling pointer). Nor does N-API offer any way to detach a buffer and take ownership of the underlying memory (assuming the JavaScript program is even okay with that). Nor does CF offer any way (as far as I can tell) to transcode a string without making a supposedly-immutable CFString in the process.
 
 	auto cfString = CFStringCreateWithBytes(
-		cfAlloc,
+		kCFAllocatorDefault,
 		const_cast<const UInt8 *>(reinterpret_cast<UInt8 *>(data)),
 		length,
 		_cfStringEncoding,
