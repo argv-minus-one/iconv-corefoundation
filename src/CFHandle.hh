@@ -8,14 +8,14 @@ class CFHandle {
 	public:
 	const T obj;
 
-	inline CFHandle(T obj, bool retain = false) : obj(obj) {
+	inline CFHandle(T obj, bool retain = false) noexcept : obj(obj) {
 		if (retain)
 			CFRetain(obj);
 	}
 
-	inline CFHandle(CFHandle<T> &other) : CFHandle(other.obj, true) {}
+	inline CFHandle(CFHandle<T> &other) noexcept : CFHandle(other.obj, true) {}
 
-	inline ~CFHandle() {
+	inline ~CFHandle() noexcept {
 		CFRelease(obj);
 	}
 
