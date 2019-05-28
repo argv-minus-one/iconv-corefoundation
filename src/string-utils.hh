@@ -4,6 +4,8 @@
 #include "CFHandle.hh"
 #include "napi.hh"
 
+struct Iccf;
+
 /**
  * Makes a `CFStringRef` from the characters in the given `Napi::String`, making 1 to 2 copies.
  */
@@ -16,17 +18,6 @@ CFStringHandle NapiStringToCFString(const Napi::String string);
  */
 Napi::String CFStringToNapiString(CFStringRef string, Napi::Env env);
 
-Napi::Buffer<uint8_t> CFStringToBuffer(
-	CFStringRef string,
-	CFStringEncoding encoding,
-	Napi::Env env,
-	UInt8 lossByte = 0
-);
+static constexpr const CFAllocatorRef &cfAlloc = kCFAllocatorDefault;
 
-CFStringHandle BufferToCFString(
-	Napi::Value buffer,
-	CFStringEncoding encoding
-);
-
-class NotRepresentableInEncoding {};
-class NotABuffer {};
+#include "iccf.hh"

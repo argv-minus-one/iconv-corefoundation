@@ -5,8 +5,6 @@
 
 static constexpr const bool isBigEndian = htonl(1) == 1;
 
-static constexpr const CFAllocatorRef &cfAlloc = kCFAllocatorDefault;
-
 CFStringHandle NapiStringToCFString(const Napi::String string) {
 	// Napi::String::Utf16Value would be painfully inefficient for what we're doing: using it would involve *three* copies of the string (JS VM to std::u16string to CFString) per call to this function! Using raw N-API, we can reduce it to one copy (JS VM to buffer, then transfer ownership of buffer to CFString). I'd rather have zero copies, but N-API makes that impossible, unfortunately.
 	const napi_env env = string.Env();
@@ -96,64 +94,4 @@ Napi::String CFStringToNapiString(CFStringRef string, Napi::Env env) {
 
 	// Construct the JS string. This will copy the characters from the buffer (which is allocated on the stack) to the JS heap.
 	return Napi::String::New(env, reinterpret_cast<char16_t *>(bytes), length);
-}
-
-static void finalizeCFObject(Napi::Env env, CFTypeRef object) noexcept {
-	CFRelease(reinterpret_cast<CFTypeRef>(object));
-}
-
-Napi::Buffer<uint8_t> CFStringToBuffer(
-	CFStringRef string,
-	CFStringEncoding encoding,
-	Napi::Env env,
-	UInt8 lossByte
-) {
-	auto data = CFStringCreateExternalRepresentation(kCFAllocatorMalloc, string, encoding, lossByte);
-
-	if (data == nullptr)
-		throw NotRepresentableInEncoding();
-
-	const auto length = CFDataGetLength(data);
-
-	// We're going to be doing a naughty here. Although CFData is supposed to be immutable, we're going to be using its memory as the backing store of a JavaScript ArrayBuffer, which *is* mutable. Behavior is undefined when we do this. It is allocated using plain malloc (to keep it off any special CF/GC/ObjC/Cocoa/whatever heap), so this hopefully won't break anything. Hopefully. Probably. It'd be nice if CFString could write its external representation to a CFMutableData...
-
-	return Napi::Buffer<uint8_t>::New(env, const_cast<UInt8 *>(CFDataGetBytePtr(data)), length, finalizeCFObject);
-}
-
-CFStringHandle BufferToCFString(
-	Napi::Value buffer,
-	CFStringEncoding encoding
-) {
-	const auto env = buffer.Env();
-	void *data;
-	size_t length;
-
-	if (buffer.IsArrayBuffer())
-		throwIfFailed(env, napi_get_arraybuffer_info(env, buffer, &data, &length));
-	else if (buffer.IsDataView())
-		throwIfFailed(env, napi_get_dataview_info(env, buffer, &length, &data, nullptr, nullptr));
-	else if (buffer.IsTypedArray() || buffer.IsBuffer()) {
-		napi_typedarray_type type;
-		throwIfFailed(env, napi_get_typedarray_info(env, buffer, &type, &length, &data, nullptr, nullptr));
-
-		if (type != napi_uint8_array)
-			throw NotABuffer();
-	}
-	else
-		throw NotABuffer();
-
-	// There's no getting around it: we have to copy the buffer here. There is a CFStringCreateWithBytesNoCopy function, but this may result in the buffer's contents being overwritten, or the whole thing being garbage-collected before the CFString is freed (which would leave the CFString with a dangling pointer). Nor does N-API offer any way to detach a buffer and take ownership of the underlying memory (assuming the JavaScript program is even okay with that). Nor does CF offer any way (as far as I can tell) to transcode a string without making a supposedly-immutable CFString in the process.
-
-	auto cfString = CFStringCreateWithBytes(
-		cfAlloc,
-		const_cast<const UInt8 *>(reinterpret_cast<UInt8 *>(data)),
-		length,
-		encoding,
-		true
-	);
-
-	if (cfString == nullptr)
-		throw NotRepresentableInEncoding();
-
-	return CFStringHandle(cfString);
 }

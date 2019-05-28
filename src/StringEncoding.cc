@@ -81,6 +81,7 @@ StringEncoding::ConstructorCookie *StringEncoding::ConstructorCookie::ForCtorCal
 StringEncoding::StringEncoding(const Napi::CallbackInfo &info)
 : ObjectWrap(info)
 , magic(MAGIC)
+, _class(StringEncodingClass::ForMethodCall(info))
 , _cfStringEncoding(ConstructorCookie::ForCtorCall(info)->encoding)
 {
 	info.This().As<Napi::Object>().DefineProperty(
@@ -98,6 +99,74 @@ std::optional<StringEncoding *> StringEncoding::Unwrap(Napi::Value wrapper) {
 		return std::nullopt;
 
 	return se;
+}
+
+Napi::Buffer<uint8_t> StringEncoding::cfEncode(
+	Napi::Env env,
+	CFStringRef string,
+	UInt8 lossByte,
+	std::optional<Napi::Value> origString
+) const {
+	auto data = CFStringCreateExternalRepresentation(kCFAllocatorMalloc, string, _cfStringEncoding, lossByte);
+
+	if (data == nullptr)
+		throw _class->iccf->newNotRepresentableError(env, origString.value_or(CFStringToNapiString(string, env)), Value());
+
+	const auto length = CFDataGetLength(data);
+
+	// We're going to be doing a naughty here. Although CFData is supposed to be immutable, we're going to be using its memory as the backing store of a JavaScript ArrayBuffer, which *is* mutable. Behavior is undefined when we do this. It is allocated using plain malloc (to keep it off any special CF/GC/ObjC/Cocoa/whatever heap), so this hopefully won't break anything. Hopefully. Probably. It'd be nice if CFString could write its external representation to a CFMutableData...
+
+	return Napi::Buffer<uint8_t>::New(
+		env,
+		const_cast<UInt8 *>(CFDataGetBytePtr(data)),
+		length,
+		[] (auto env, auto object) noexcept {
+			CFRelease(object);
+		}
+	);
+}
+
+CFStringHandle StringEncoding::cfDecode(Napi::Value buffer) const {
+	const auto env = buffer.Env();
+	void *data;
+	size_t length;
+
+	{
+		class NotABuffer {};
+		try {
+			if (buffer.IsArrayBuffer())
+				throwIfFailed(env, napi_get_arraybuffer_info(env, buffer, &data, &length));
+			else if (buffer.IsDataView())
+				throwIfFailed(env, napi_get_dataview_info(env, buffer, &length, &data, nullptr, nullptr));
+			else if (buffer.IsTypedArray() || buffer.IsBuffer()) {
+				napi_typedarray_type type;
+				throwIfFailed(env, napi_get_typedarray_info(env, buffer, &type, &length, &data, nullptr, nullptr));
+
+				if (type != napi_uint8_array)
+					throw NotABuffer();
+			}
+			else
+				throw NotABuffer();
+		}
+		catch (NotABuffer) {
+			throw _class->iccf->newFormattedTypeError(env, "a Buffer, ArrayBuffer, DataView, or Uint8Array", buffer);
+		}
+	}
+
+	// There's no getting around it: we have to copy the buffer here. There is a CFStringCreateWithBytesNoCopy function, but this may result in the buffer's contents being overwritten, or the whole thing being garbage-collected before the CFString is freed (which would leave the CFString with a dangling pointer). Nor does N-API offer any way to detach a buffer and take ownership of the underlying memory (assuming the JavaScript program is even okay with that). Nor does CF offer any way (as far as I can tell) to transcode a string without making a supposedly-immutable CFString in the process.
+
+	auto cfString = CFStringCreateWithBytes(
+		cfAlloc,
+		const_cast<const UInt8 *>(reinterpret_cast<UInt8 *>(data)),
+		length,
+		_cfStringEncoding,
+		true
+	);
+
+	if (cfString == nullptr)
+		throw _class->iccf->newNotRepresentableError(env, buffer, Value());
+
+	return CFStringHandle(cfString);
 }
 
 std::optional<Napi::String> StringEncoding::ianaCharSetName(const Napi::Env &env) {
@@ -130,29 +199,14 @@ Napi::Value StringEncoding::nsStringEncoding(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value StringEncoding::decode(const Napi::CallbackInfo &info) {
-	try {
-		auto cfString = BufferToCFString(info[0], _cfStringEncoding);
-		return CFStringToNapiString(cfString, info.Env());
-	}
-	catch (NotRepresentableInEncoding) {
-		throw _class(info)->iccf->newNotRepresentableError(info.Env(), info[0], info.This().As<Napi::Object>());
-	}
-	catch (NotABuffer) {
-		throw _class(info)->iccf->newFormattedTypeError(info.Env(), "a Buffer, ArrayBuffer, DataView, or Uint8Array", info[0]);
-	}
+	return CFStringToNapiString(cfDecode(info[0]), info.Env());
 }
 
 Napi::Value StringEncoding::encode(const Napi::CallbackInfo &info) {
 	auto string = info[0].ToString();
-	auto cfString = NapiStringToCFString(string);
 	EncodeOptions options(info[1]);
 
-	try {
-		return CFStringToBuffer(cfString, _cfStringEncoding, info.Env(), options.lossByte);
-	}
-	catch (NotRepresentableInEncoding) {
-		throw _class(info)->iccf->newNotRepresentableError(info.Env(), info[0], info.This().As<Napi::Object>());
-	}
+	return cfEncode(info.Env(), NapiStringToCFString(string), options.lossByte, string);
 }
 
 Napi::Value StringEncoding::equals(const Napi::CallbackInfo &info) {
@@ -183,45 +237,50 @@ Napi::Value StringEncoding::toPrimitive(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value StringEncoding::byCFStringEncoding(const Napi::CallbackInfo &info) {
+	const auto _class = StringEncodingClass::ForMethodCall(info);
 	CFStringEncoding encoding = info[0].ToNumber();
 
 	if (CFStringIsEncodingAvailable(encoding))
-		return _class(info)->New(info.Env(), encoding)->Value();
+		return _class->New(info.Env(), encoding)->Value();
 	else
-		throw _class(info)->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::CFStringEncoding);
+		throw _class->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::CFStringEncoding);
 }
 
 Napi::Value StringEncoding::byIANACharSetName(const Napi::CallbackInfo &info) {
+	const auto _class = StringEncodingClass::ForMethodCall(info);
 	auto jsEncodingName = info[0].ToString();
 	auto encodingName = NapiStringToCFString(jsEncodingName);
 	auto encoding = CFStringConvertIANACharSetNameToEncoding(encodingName);
 
 	if (encoding == kCFStringEncodingInvalidId)
-		throw _class(info)->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::IANACharSetName);
+		throw _class->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::IANACharSetName);
 	else
-		return _class(info)->New(info.Env(), encoding)->Value();
+		return _class->New(info.Env(), encoding)->Value();
 }
 
 Napi::Value StringEncoding::byWindowsCodepage(const Napi::CallbackInfo &info) {
+	const auto _class = StringEncodingClass::ForMethodCall(info);
 	UInt32 codepage = info[0].ToNumber();
 	auto encoding = CFStringConvertWindowsCodepageToEncoding(codepage);
 
 	if (encoding == kCFStringEncodingInvalidId)
-		throw _class(info)->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::WindowsCodepage);
+		throw _class->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::WindowsCodepage);
 	else
-		return _class(info)->New(info.Env(), encoding)->Value();
+		return _class->New(info.Env(), encoding)->Value();
 }
 
 Napi::Value StringEncoding::byNSStringEncoding(const Napi::CallbackInfo &info) {
+	const auto _class = StringEncodingClass::ForMethodCall(info);
 	uint32_t nsEncoding = info[0].ToNumber();
 	auto encoding = CFStringConvertNSStringEncodingToEncoding(nsEncoding);
 
 	if (encoding == kCFStringEncodingInvalidId)
-		throw _class(info)->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::NSStringEncoding);
+		throw _class->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::NSStringEncoding);
 	else
-		return _class(info)->New(info.Env(), encoding)->Value();
+		return _class->New(info.Env(), encoding)->Value();
 }
 
 Napi::Value StringEncoding::system(const Napi::CallbackInfo &info) {
-	return _class(info)->New(info.Env(), CFStringGetSystemEncoding())->Value();
+	const auto _class = StringEncodingClass::ForMethodCall(info);
+	return _class->New(info.Env(), CFStringGetSystemEncoding())->Value();
 }

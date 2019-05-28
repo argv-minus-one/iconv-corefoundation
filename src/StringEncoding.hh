@@ -1,6 +1,7 @@
 #pragma once
 
 #include "napi.hh"
+#include "CFHandle.hh"
 #include <optional>
 #include <CoreFoundation/CFString.h>
 
@@ -35,10 +36,6 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	static const void *MAGIC;
 	const void *magic;
 
-	static inline StringEncodingClass *_class(const Napi::CallbackInfo &info) {
-		return StringEncodingClass::ForMethodCall(info);
-	}
-
 	Napi::Value ianaCharSetName(const Napi::CallbackInfo &info);
 	Napi::Value windowsCodepage(const Napi::CallbackInfo &info);
 	Napi::Value nsStringEncoding(const Napi::CallbackInfo &info);
@@ -66,6 +63,7 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	};
 
 	public:
+	const StringEncodingClass *_class;
 	const CFStringEncoding _cfStringEncoding;
 
 	inline operator CFStringEncoding() const {
@@ -75,6 +73,15 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	std::optional<Napi::String> ianaCharSetName(const Napi::Env &env);
 	Napi::String name(const Napi::Env &env);
 	static std::optional<StringEncoding *> Unwrap(Napi::Value wrapper);
+
+	Napi::Buffer<uint8_t> cfEncode(
+		Napi::Env env,
+		CFStringRef string,
+		UInt8 lossByte = 0,
+		std::optional<Napi::Value> origString = std::nullopt
+	) const;
+
+	CFStringHandle cfDecode(Napi::Value buffer) const;
 };
 
 #include "iccf.hh"
