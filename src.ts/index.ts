@@ -2,10 +2,8 @@ import { inspect } from "util";
 import * as iccfErrors from "./errors";
 
 export const stuff: unknown = require("bindings")("iconv_corefoundation_native.node")({
-	IccfTypeError: class extends TypeError {
-		constructor(where: any, expected: any, actual: any) {
-			super(`${where} must be ${expected}. Instead it is: ${inspect(actual)}`);
-		}
+	newFormattedTypeError(expected: unknown, actual: unknown) {
+		return new TypeError(`Expected ${expected}; got ${inspect(actual)}`);
 	},
 	...iccfErrors
 });

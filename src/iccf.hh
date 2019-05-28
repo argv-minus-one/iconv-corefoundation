@@ -4,7 +4,7 @@
 #include "StringEncoding.hh"
 
 struct Iccf {
-	const Napi::FunctionReference NotRepresentableError, UnrecognizedEncodingError, IccfTypeError;
+	const Napi::FunctionReference NotRepresentableError, UnrecognizedEncodingError, _newFormattedTypeError;
 	const StringEncodingClass StringEncoding;
 
 	Iccf(Napi::Object imports, Napi::Object exports);
@@ -28,7 +28,7 @@ struct Iccf {
 		return UnrecognizedEncodingError.New({ encodingSpecifier, Napi::Number::New(env, static_cast<uint32_t>(specifierKind)) }).As<Napi::Error>();
 	}
 
-	inline Napi::TypeError newIccfTypeError(const Napi::Env env, const char *where, const char *expected, Napi::Value actual) const {
-		return IccfTypeError.New({ Napi::String::New(env, where), Napi::String::New(env, expected), actual }).As<Napi::TypeError>();
+	inline Napi::TypeError newFormattedTypeError(const Napi::Env env, const char *expected, Napi::Value actual) const {
+		return _newFormattedTypeError({ Napi::String::New(env, expected), actual }).As<Napi::TypeError>();
 	}
 };

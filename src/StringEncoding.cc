@@ -138,7 +138,7 @@ Napi::Value StringEncoding::decode(const Napi::CallbackInfo &info) {
 		throw _class(info)->iccf->newNotRepresentableError(info.Env(), info[0], info.This().As<Napi::Object>());
 	}
 	catch (NotABuffer) {
-		throw _class(info)->iccf->newIccfTypeError(info.Env(), "First parameter to StringEncoding.prototype.decode", "a Buffer, ArrayBuffer, DataView, or Uint8Array", info[0]);
+		throw _class(info)->iccf->newFormattedTypeError(info.Env(), "a Buffer, ArrayBuffer, DataView, or Uint8Array", info[0]);
 	}
 }
 
