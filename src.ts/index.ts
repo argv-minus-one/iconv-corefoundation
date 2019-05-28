@@ -136,7 +136,7 @@ export declare function encodeSmallest(content: string, options?: EncodeOptions)
 export declare function encodeFastest(content: string, options: EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
 export declare function encodeFastest(content: string, options?: EncodeOptions): TextAndEncoding;
 
-export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding): Buffer;
+export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
 
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): TextAndEncoding;
