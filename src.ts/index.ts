@@ -1,15 +1,13 @@
 import { inspect } from "util";
 import * as iccfErrors from "./errors";
 
-export const stuff: unknown = require("bindings")("iconv_corefoundation_native.node")({
-	newFormattedTypeError(expected: unknown, actual: unknown) {
-		return new TypeError(`Expected ${expected}; got ${inspect(actual)}`);
-	},
-	...iccfErrors
-});
-
 Object.assign(exports,
-	stuff,
+	require("bindings")("iconv_corefoundation_native.node")({
+		newFormattedTypeError(expected: unknown, actual: unknown) {
+			return new TypeError(`Expected ${expected}; got ${inspect(actual)}`);
+		},
+		...iccfErrors
+	}),
 	iccfErrors
 );
 
