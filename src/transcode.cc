@@ -151,29 +151,15 @@ static Napi::Value selectAndTranscode(
 	const std::function<StringEncoding *(CFStringRef)> &selectToEncoding,
 	StringEncoding **selectedToEncoding = nullptr
 ) {
-	StringEncoding *_selectedToEncoding;
-
-	const auto resultBuffer = selectAndEncode(
+	return selectAndEncode(
 		env,
 		iccf,
 		fromEncoding->cfDecode(from),
 		encodeOptions,
 		selectToEncoding,
-		&_selectedToEncoding,
+		selectedToEncoding,
 		from
 	);
-
-	if (selectedToEncoding != nullptr)
-		*selectedToEncoding = _selectedToEncoding;
-
-	if (resultBuffer.IsNull())
-		return resultBuffer;
-	else {
-		auto result = Napi::Object::New(env);
-		result["encoding"] = _selectedToEncoding->Value();
-		result["text"] = resultBuffer;
-		return result;
-	}
 }
 
 static Napi::Value selectAndTranscode(
