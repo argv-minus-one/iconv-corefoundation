@@ -20,7 +20,6 @@ StringEncodingClass::StringEncodingClass(Napi::Env env, Iccf *iccf)
 		StringEncoding::InstanceAccessor("name", &StringEncoding::name, nullptr, napi_enumerable, this),
 		StringEncoding::InstanceMethod("decode", &StringEncoding::decode, napi_default, this),
 		StringEncoding::InstanceMethod("encode", &StringEncoding::encode, napi_default, this),
-		StringEncoding::InstanceMethod("equals", &StringEncoding::equals, napi_default, this),
 		StringEncoding::InstanceMethod(Napi::Symbol::WellKnown(env, "toPrimitive"), &StringEncoding::toPrimitive, napi_default, this),
 		StringEncoding::StaticMethod("byCFStringEncoding", &StringEncoding::byCFStringEncoding, napi_default, this),
 		StringEncoding::StaticMethod("byIANACharSetName", &StringEncoding::byIANACharSetName, napi_default, this),
@@ -216,12 +215,6 @@ Napi::Value StringEncoding::encode(const Napi::CallbackInfo &info) {
 	EncodeOptions options(info[1]);
 
 	return cfEncode(info.Env(), NapiStringToCFString(string), options.lossByte, string);
-}
-
-Napi::Value StringEncoding::equals(const Napi::CallbackInfo &info) {
-	auto other = info[0];
-	auto otherAsSE = Unwrap(other);
-	return Napi::Boolean::From(info.Env(), otherAsSE && (*otherAsSE)->_cfStringEncoding == _cfStringEncoding);
 }
 
 Napi::String StringEncoding::name(const Napi::Env &env) {

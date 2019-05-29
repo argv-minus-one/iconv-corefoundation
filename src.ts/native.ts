@@ -63,8 +63,6 @@ export declare class StringEncoding {
 
 	encode(string: string, options?: EncodeOptions): Buffer;
 
-	equals(other: StringEncoding): boolean;
-
 	/**
 	 * Looks up a `StringEncoding` by its numeric identifier.
 	 *

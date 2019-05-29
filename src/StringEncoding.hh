@@ -43,7 +43,6 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	Napi::Value decode(const Napi::CallbackInfo &info);
 	Napi::Value encode(const Napi::CallbackInfo &info);
 	Napi::Value toPrimitive(const Napi::CallbackInfo &info);
-	Napi::Value equals(const Napi::CallbackInfo &info);
 	Napi::Value name(const Napi::CallbackInfo &info);
 
 	static Napi::Value byCFStringEncoding(const Napi::CallbackInfo &info);
