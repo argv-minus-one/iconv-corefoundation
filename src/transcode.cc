@@ -46,7 +46,7 @@ static Napi::Value selectAndEncode(
 	if (options.isEncodingOk(encoding)) {
 		const auto text = encoding->cfEncode(env, string, options.lossByte, origString);
 
-		const auto result = Napi::Object::New(env);
+		auto result = Napi::Object::New(env);
 		result["encoding"] = encoding->Value();
 		result["text"] = text;
 		return result;
