@@ -247,7 +247,7 @@ Napi::Value StringEncoding::toPrimitive(const Napi::CallbackInfo &info) {
 
 Napi::Value StringEncoding::byCFStringEncoding(const Napi::CallbackInfo &info) {
 	const auto _class = StringEncodingClass::ForMethodCall(info);
-	CFStringEncoding encoding = info[0].ToNumber();
+	CFStringEncoding encoding = info[0].As<Napi::Number>();
 
 	if (CFStringIsEncodingAvailable(encoding))
 		return _class->New(info.Env(), encoding)->Value();
@@ -257,7 +257,7 @@ Napi::Value StringEncoding::byCFStringEncoding(const Napi::CallbackInfo &info) {
 
 Napi::Value StringEncoding::byIANACharSetName(const Napi::CallbackInfo &info) {
 	const auto _class = StringEncodingClass::ForMethodCall(info);
-	auto jsEncodingName = info[0].ToString();
+	auto jsEncodingName = info[0].As<Napi::String>();
 	auto encodingName = NapiStringToCFString(jsEncodingName);
 	auto encoding = CFStringConvertIANACharSetNameToEncoding(encodingName);
 
@@ -269,7 +269,7 @@ Napi::Value StringEncoding::byIANACharSetName(const Napi::CallbackInfo &info) {
 
 Napi::Value StringEncoding::byWindowsCodepage(const Napi::CallbackInfo &info) {
 	const auto _class = StringEncodingClass::ForMethodCall(info);
-	UInt32 codepage = info[0].ToNumber();
+	UInt32 codepage = info[0].As<Napi::Number>();
 	auto encoding = CFStringConvertWindowsCodepageToEncoding(codepage);
 
 	if (encoding == kCFStringEncodingInvalidId)
@@ -280,13 +280,25 @@ Napi::Value StringEncoding::byWindowsCodepage(const Napi::CallbackInfo &info) {
 
 Napi::Value StringEncoding::byNSStringEncoding(const Napi::CallbackInfo &info) {
 	const auto _class = StringEncodingClass::ForMethodCall(info);
-	uint32_t nsEncoding = info[0].ToNumber();
-	auto encoding = CFStringConvertNSStringEncodingToEncoding(nsEncoding);
 
-	if (encoding == kCFStringEncodingInvalidId)
+	// Officially, the type of NSStringEncoding is unsigned long. Experimentally, however, segfaults happen when trying to use values ≥ 0x80000000, implying that NSStringEncoding is actually an unsigned 31-bit integer. To work around this, we'll use a signed 32-bit integer, and reject values < 0.
+	int32_t nsEncoding = info[0].As<Napi::Number>();
+
+	class Unrecognized {};
+	try {
+		if (nsEncoding < 0)
+			throw Unrecognized();
+
+		auto encoding = CFStringConvertNSStringEncodingToEncoding(nsEncoding);
+
+		if (encoding == kCFStringEncodingInvalidId)
+			throw Unrecognized();
+		else
+			return _class->New(info.Env(), encoding)->Value();
+	}
+	catch (Unrecognized) {
 		throw _class->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::NSStringEncoding);
-	else
-		return _class->New(info.Env(), encoding)->Value();
+	}
 }
 
 Napi::Value StringEncoding::system(const Napi::CallbackInfo &info) {
