@@ -49,4 +49,6 @@ Iccf::Iccf(Napi::Object imports, Napi::Object exports)
 	exports.DefineProperties({
 		Napi::PropertyDescriptor::Value("StringEncoding", StringEncoding.constructor(), napi_enumerable)
 	});
+
+	TranscodeInit(imports.Env(), exports, this);
 }
