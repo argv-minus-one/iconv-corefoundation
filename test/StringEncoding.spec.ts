@@ -1,6 +1,6 @@
 import * as Chai from "chai";
 import { inspect } from "util";
-import { DecodeOptions, EncodeOptions, NotRepresentableError, StringEncoding } from "..";
+import { DecodeOptions, EncodeOptions, NotRepresentableError, StringEncoding, UnrecognizedEncodingError } from "..";
 import ChaiBytes = require("chai-bytes");
 
 Chai.use(ChaiBytes);
@@ -181,4 +181,43 @@ describe("StringEncoding", () => {
 			}
 		});
 	}
+
+	describe(".system", () => {
+		const se = StringEncoding.system;
+
+		it("should round-trip a basic string", () => {
+			assert.strictEqual(se.decode(se.encode("Hello")), "Hello");
+		});
+	});
+
+	it("shouldn't choke on null bytes", () => {
+		const ascii = StringEncoding.byIANACharSetName("us-ascii");
+		const encoded = ascii.encode("\0Hello\0world");
+		assert.equalBytes(encoded, [0, 72, 101, 108, 108, 111, 0, 119, 111, 114, 108, 100]);
+		const decoded = ascii.decode(encoded);
+		assert.strictEqual(decoded, "\0Hello\0world");
+	});
+
+	it("should pass through control characters", () => {
+		const string = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x20";
+		const a = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32];
+		const ascii = StringEncoding.byIANACharSetName("us-ascii");
+
+		const encoded = ascii.encode(string);
+		assert.equalBytes(encoded, a);
+		const decoded = ascii.decode(encoded);
+		assert.strictEqual(decoded, string);
+	});
+
+	it("should reject invalid encoding specifiers", () => {
+		assert.throws(() => StringEncoding.byCFStringEncoding(0xffffffff /* kCFStringEncodingInvalidId */), UnrecognizedEncodingError);
+		assert.throws(() => StringEncoding.byCFStringEncoding("hi" as any));
+		assert.throws(() => StringEncoding.byIANACharSetName("FOOBIE BLETCH"), UnrecognizedEncodingError);
+		assert.throws(() => StringEncoding.byIANACharSetName(null as any));
+		assert.throws(() => StringEncoding.byNSStringEncoding(0xffffffff), UnrecognizedEncodingError);
+		assert.throws(() => StringEncoding.byNSStringEncoding(0x80000000), UnrecognizedEncodingError);
+		assert.throws(() => StringEncoding.byNSStringEncoding("xyzzy" as any));
+		assert.throws(() => StringEncoding.byWindowsCodepage(0), UnrecognizedEncodingError);
+		assert.throws(() => StringEncoding.byWindowsCodepage("lolwut" as any));
+	});
 });
