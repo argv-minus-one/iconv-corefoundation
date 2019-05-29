@@ -1,13 +1,21 @@
 #pragma once
 
 #include "napi.hh"
-#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFString.h>
+#include <optional>
+
+class StringEncoding;
+struct Iccf;
 
 struct EncodeOptions {
-	UInt8 lossByte;
+	UInt8 lossByte = 0;
+	std::optional<napi_ref> _isEncodingOk = std::nullopt;
 
 	inline EncodeOptions() {}
 	EncodeOptions(Napi::Value options);
+
+	bool isEncodingOk(StringEncoding *encoding) const;
+	bool isEncodingOk(Napi::Env env, const Iccf *iccf, CFStringEncoding encoding, StringEncoding **encodingObj = nullptr) const;
 };
 
 struct DecodeOptions {
@@ -15,6 +23,7 @@ struct DecodeOptions {
 	inline DecodeOptions(Napi::Value options) : DecodeOptions() {}
 };
 
-// struct Iccf;
-// void TranscodeInit(Napi::Env env, Napi::Object exports, Iccf *globals);
-// #include "iccf.hh"
+void TranscodeInit(Napi::Env env, Napi::Object exports, Iccf *globals);
+
+#include "iccf.hh"
+#include "StringEncoding.hh"

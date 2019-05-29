@@ -2,6 +2,7 @@
 
 #include "napi.hh"
 #include "CFHandle.hh"
+#include "string-utils.hh"
 #include <optional>
 #include <CoreFoundation/CFString.h>
 
@@ -73,13 +74,43 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	std::optional<Napi::String> ianaCharSetName(const Napi::Env &env);
 	Napi::String name(const Napi::Env &env);
 	static std::optional<StringEncoding *> Unwrap(Napi::Value wrapper);
+	static StringEncoding *UnwrapOrThrow(Iccf *iccf, Napi::Value wrapper);
 
 	Napi::Buffer<uint8_t> cfEncode(
 		Napi::Env env,
 		CFStringRef string,
 		UInt8 lossByte = 0,
-		std::optional<Napi::Value> origString = std::nullopt
+		std::function<Napi::Value(CFStringRef, Napi::Env)> origString = CFStringToNapiString
 	) const;
+
+	inline Napi::Buffer<uint8_t> cfEncode(
+		Napi::Env env,
+		CFStringRef string,
+		UInt8 lossByte,
+		Napi::Value origString
+	) const {
+		return cfEncode(
+			env,
+			string,
+			lossByte,
+			[origString] (auto, auto) {
+				return origString;
+			}
+		);
+	}
+
+	inline Napi::Buffer<uint8_t> cfEncode(
+		Napi::Env env,
+		CFStringRef string,
+		Napi::Value origString
+	) const {
+		return cfEncode(
+			env,
+			string,
+			0,
+			origString
+		);
+	}
 
 	CFStringHandle cfDecode(Napi::Value buffer) const;
 };

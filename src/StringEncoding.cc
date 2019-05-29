@@ -105,12 +105,12 @@ Napi::Buffer<uint8_t> StringEncoding::cfEncode(
 	Napi::Env env,
 	CFStringRef string,
 	UInt8 lossByte,
-	std::optional<Napi::Value> origString
+	std::function<Napi::Value(CFStringRef, Napi::Env)> origString
 ) const {
 	auto data = CFStringCreateExternalRepresentation(kCFAllocatorMalloc, string, _cfStringEncoding, lossByte);
 
 	if (data == nullptr)
-		throw _class->iccf->newNotRepresentableError(env, origString.value_or(CFStringToNapiString(string, env)), Value());
+		throw _class->iccf->newNotRepresentableError(env, origString(string, env), Value());
 
 	const auto length = CFDataGetLength(data);
 
@@ -167,6 +167,15 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value buffer) const {
 		throw _class->iccf->newNotRepresentableError(env, buffer, Value());
 
 	return CFStringHandle(cfString);
+}
+
+StringEncoding *StringEncoding::UnwrapOrThrow(Iccf *iccf, Napi::Value wrapper) {
+	auto opt = StringEncoding::Unwrap(wrapper);
+
+	if (opt)
+		return *opt;
+	else
+		throw iccf->newFormattedTypeError(wrapper.Env(), "a StringEncoding", wrapper);
 }
 
 std::optional<Napi::String> StringEncoding::ianaCharSetName(const Napi::Env &env) {
