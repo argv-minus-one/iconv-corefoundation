@@ -25,6 +25,8 @@ export declare class StringEncoding {
 	/**
 	 * The numeric identifier of this `StringEncoding`.
 	 *
+	 * Note that this is not a *unique* identifier. Core Foundation interprets many different values as Mac OS Roman. The `name` is more likely (though still not guaranteed) to be truly unique.
+	 *
 	 * @see [`CFStringEncoding`](https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc)
 	 */
 	readonly cfStringEncoding: number;
@@ -51,7 +53,7 @@ export declare class StringEncoding {
 	readonly nsStringEncoding: number | null;
 
 	/**
-	 * The name of this `StringEncoding`.
+	 * The canonical name of this `StringEncoding`. This is likely (but not guaranteed) to be a unique identifier for each distinct encoding.
 	 *
 	 * @see [`CFStringGetNameOfEncoding`](https://developer.apple.com/documentation/corefoundation/1543585-cfstringgetnameofencoding?language=objc)
 	 */
