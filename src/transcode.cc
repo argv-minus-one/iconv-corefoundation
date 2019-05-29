@@ -8,12 +8,10 @@
 #include <CoreFoundation/CFString.h>
 
 bool EncodeOptions::isEncodingOk(StringEncoding *encoding) const {
-	if (_isEncodingOk) {
-		Napi::FunctionReference ref(encoding->Env(), *_isEncodingOk);
-		return ref.Call({encoding->Value()}).ToBoolean();
-	}
-	else
+	if (_isEncodingOk.IsEmpty())
 		return true;
+	else
+		return _isEncodingOk({encoding->Value()}).ToBoolean();
 }
 
 bool EncodeOptions::isEncodingOk(Napi::Env env, const Iccf *iccf, CFStringEncoding encoding, StringEncoding **encodingObj) const {
@@ -203,7 +201,7 @@ EncodeOptions::EncodeOptions(Napi::Value options) {
 		{
 			const Napi::Value _isEncodingOkV = _options["isEncodingOk"];
 			if (_isEncodingOkV.IsFunction())
-				; //_isEncodingOk = Napi::Persistent(_isEncodingOkV.As<Napi::Function>());
+				_isEncodingOk = Napi::Persistent(_isEncodingOkV.As<Napi::Function>());
 		}
 	}
 }

@@ -9,7 +9,7 @@ struct Iccf;
 
 struct EncodeOptions {
 	UInt8 lossByte = 0;
-	std::optional<napi_ref> _isEncodingOk = std::nullopt;
+	Napi::FunctionReference _isEncodingOk;
 
 	inline EncodeOptions() {}
 	EncodeOptions(Napi::Value options);
