@@ -52,6 +52,7 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	static Napi::Value system(const Napi::CallbackInfo &info);
 
 	StringEncoding(const Napi::CallbackInfo &info);
+	~StringEncoding();
 
 	class ConstructorCookie {
 		const void *magic;

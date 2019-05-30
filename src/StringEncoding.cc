@@ -86,6 +86,12 @@ StringEncoding::StringEncoding(const Napi::CallbackInfo &info)
 	info.This().As<Napi::Object>().DefineProperty(
 		Napi::PropertyDescriptor::Value("cfStringEncoding", Napi::Number::New(info.Env(), _cfStringEncoding))
 	);
+
+	Napi::MemoryManagement::AdjustExternalMemory(info.Env(), sizeof(StringEncoding));
+}
+
+StringEncoding::~StringEncoding() {
+	Napi::MemoryManagement::AdjustExternalMemory(Env(), -sizeof(StringEncoding));
 }
 
 std::optional<StringEncoding *> StringEncoding::Unwrap(Napi::Value wrapper) {
