@@ -1,8 +1,7 @@
 import { inspect } from "util";
 import * as errors from "./errors";
-import bindings = require("bindings");
 
-module.exports = bindings("iconv_corefoundation_native.node")({
+module.exports = require("./native.node")({
 	newFormattedTypeError(expected: unknown, actual: unknown) {
 		return new TypeError(`Expected ${expected}; got ${inspect(actual)}`);
 	},
