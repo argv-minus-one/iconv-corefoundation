@@ -1,4 +1,5 @@
 import { BufferLike, DecodeOptions, EncodeOptions, StringEncoding } from "./native";
+import { UnrecognizedEncodingError } from "./errors";
 
 export * from "./errors";
 export * from "./native";
@@ -9,7 +10,16 @@ export * from "./native";
  * @param encoding - The IANA character set name of the encoding.
  */
 export function encodingExists(encoding: string): boolean {
-	return StringEncoding.byIANACharSetName(encoding) !== null;
+	try {
+		StringEncoding.byIANACharSetName(encoding);
+	}
+	catch (e) {
+		if (e instanceof UnrecognizedEncodingError)
+			return false;
+		else
+			throw e;
+	}
+	return true;
 }
 
 /**

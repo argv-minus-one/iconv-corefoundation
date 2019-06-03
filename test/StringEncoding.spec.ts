@@ -1,6 +1,6 @@
 import * as Chai from "chai";
 import { inspect } from "util";
-import { DecodeOptions, EncodeOptions, NotRepresentableError, StringEncoding, UnrecognizedEncodingError } from "..";
+import { DecodeOptions, EncodeOptions, NotRepresentableError, StringEncoding, UnrecognizedEncodingError, encode, decode } from "..";
 import ChaiBytes = require("chai-bytes");
 
 Chai.use(ChaiBytes);
@@ -162,13 +162,19 @@ describe("StringEncoding", () => {
 			for (const {comment, string, bytes, encodeOptions, decodeOptions} of ref.text) {
 				if (encodeOptions !== null)
 				it(`should encode ${inspect(string)} to ${inspect(bytes)}${comment ? ` (${comment})` : ""}`, () => {
-					const result = Buffer.from(se.encode(string, encodeOptions));
+					let result = Buffer.from(se.encode(string, encodeOptions));
+					assert.equalBytes(result, bytes);
+
+					result = Buffer.from(encode(string, se, encodeOptions));
 					assert.equalBytes(result, bytes);
 				});
 
 				if (decodeOptions !== null)
 				it(`should decode ${inspect(bytes)} to ${inspect(string)}${comment ? ` (${comment})` : ""}`, () => {
-					const result = se.decode(bytes, decodeOptions);
+					let result = se.decode(bytes, decodeOptions);
+					assert.strictEqual(result, string);
+
+					result = decode(bytes, se, decodeOptions);
 					assert.strictEqual(result, string);
 				});
 			}
