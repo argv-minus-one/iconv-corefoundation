@@ -8,127 +8,193 @@ module.exports = require("./native.node")({
 	...errors
 });
 
+/** Supported representations of encoded text. */
 export type BufferLike = Buffer | Uint8Array | DataView | ArrayBufferLike;
 
 /**
  * A character encoding, known to the Core Foundation framework.
  *
- * @see [`CFStringEncoding`](https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc)
+ * @remarks
+ * Each instance of this class represents a {@link https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc | CFStringEncoding} value.
  */
 export declare class StringEncoding {
-	/**
-	 * Instances of this class cannot be constructed directly.
-	 */
+	/** Instances of this class cannot be constructed directly. */
 	private constructor();
 
 	/**
-	 * The numeric identifier of this `StringEncoding`.
+	 * The numeric identifier of this {@link StringEncoding}.
+	 *
+	 * @remarks
+	 * This corresponds to the Core Foundation type {@link https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc | CFStringEncoding}.
 	 *
 	 * Note that this is not a *unique* identifier. Core Foundation interprets many different values as Mac OS Roman. The `name` is more likely (though still not guaranteed) to be truly unique.
-	 *
-	 * @see [`CFStringEncoding`](https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc)
 	 */
 	readonly cfStringEncoding: number;
 
 	/**
-	 * The IANA character set name that is the closest mapping to this `StringEncoding`.
+	 * The IANA character set name that is the closest mapping to this {@link StringEncoding}.
 	 *
-	 * @see [`CFStringConvertEncodingToIANACharSetName`](https://developer.apple.com/documentation/corefoundation/1542710-cfstringconvertencodingtoianacha?language=objc)
+	 * @remarks
+	 * This is the return value of the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1542710-cfstringconvertencodingtoianacha?language=objc | CFStringConvertEncodingToIANACharSetName}.
 	 */
 	readonly ianaCharSetName: string;
 
 	/**
-	 * The Windows codepage that is the closest mapping to this `StringEncoding`.
+	 * The Windows codepage that is the closest mapping to this {@link StringEncoding}.
 	 *
-	 * @see [`CFStringConvertEncodingToWindowsCodepage`](https://developer.apple.com/documentation/corefoundation/1543125-cfstringconvertencodingtowindows?language=objc)
+	 * @remarks
+	 * This is the return value of the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1543125-cfstringconvertencodingtowindows?language=objc | CFStringConvertEncodingToWindowsCodepage}.
 	 */
 	readonly windowsCodepage: number | null;
 
 	/**
-	 * The Cocoa encoding constant that is the closest mapping to this `StringEncoding`.
+	 * The Cocoa encoding constant that is the closest mapping to this {@link StringEncoding}.
 	 *
-	 * @see [`CFStringConvertEncodingToNSStringEncoding`](https://developer.apple.com/documentation/corefoundation/1543046-cfstringconvertencodingtonsstrin?language=objc)
+	 * @remarks
+	 * This is the return value of the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1543046-cfstringconvertencodingtonsstrin?language=objc | CFStringConvertEncodingToNSStringEncoding}.
 	 */
 	readonly nsStringEncoding: number | null;
 
 	/**
-	 * The canonical name of this `StringEncoding`. This is likely (but not guaranteed) to be a unique identifier for each distinct encoding.
+	 * The canonical name of this {@link StringEncoding}. This is likely (but not guaranteed) to be a unique identifier for each distinct encoding.
 	 *
-	 * @see [`CFStringGetNameOfEncoding`](https://developer.apple.com/documentation/corefoundation/1543585-cfstringgetnameofencoding?language=objc)
+	 * @remarks
+	 * This is the return value of the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1543585-cfstringgetnameofencoding?language=objc | CFStringGetNameOfEncoding}.
 	 */
 	readonly name: string;
 
+	/**
+	 * Decodes the text in the given `buffer`.
+	 *
+	 * @param buffer - The encoded text.
+	 * @param options - Options for decoding.
+	 * @returns The decoded text, as a string.
+	 */
 	decode(buffer: BufferLike, options?: DecodeOptions): string;
 
+	/**
+	 * Encodes the given string.
+	 *
+	 * @remarks
+	 * Throws {@link NotRepresentableError} if the `string` cannot be fully represented in this encoding, and `options` does not contain a `lossByte`.
+	 *
+	 * @param string - The text to encode.
+	 * @param options - Options for encoding.
+	 * @returns The encoded text, in a `Buffer`.
+	 */
 	encode(string: string, options?: EncodeOptions): Buffer;
 
 	/**
-	 * Looks up a `StringEncoding` by its numeric identifier.
+	 * Looks up a {@link StringEncoding} by its {@link https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc | numeric identifier}.
 	 *
 	 * @remarks
-	 * Throws `UnrecognizedEncodingError` if not recognized.
+	 * Throws {@link UnrecognizedEncodingError} if not recognized and supported.
 	 *
-	 * @returns The found `StringEncoding`.
-	 *
-	 * @see [`CFStringEncoding`](https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc)
+	 * @returns The found {@link StringEncoding}.
 	 */
 	static byCFStringEncoding(id: number): StringEncoding;
 
 	/**
-	 * Looks up a `StringEncoding` by corresponding IANA character set identifier.
+	 * Looks up a {@link StringEncoding} by corresponding IANA character set identifier.
 	 *
 	 * @remarks
-	 * Throws `UnrecognizedEncodingError` if not recognized.
+	 * Throws {@link UnrecognizedEncodingError} if not recognized and supported.
 	 *
-	 * @returns The found `StringEncoding`.
+	 * This uses the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1542975-cfstringconvertianacharsetnameto?language=objc | CFStringConvertIANACharSetNameToEncoding}.
 	 *
-	 * @see [`CFStringConvertIANACharSetNameToEncoding`](https://developer.apple.com/documentation/corefoundation/1542975-cfstringconvertianacharsetnameto?language=objc)
+	 * @returns The found {@link StringEncoding}.
 	 */
 	static byIANACharSetName(charset: string): StringEncoding;
 
 	/**
-	 * Looks up a `StringEncoding` by corresponding Windows codepage.
+	 * Looks up a {@link StringEncoding} by corresponding Windows codepage.
 	 *
 	 * @remarks
-	 * Throws `UnrecognizedEncodingError` if not recognized.
+	 * Throws {@link UnrecognizedEncodingError} if not recognized and supported.
 	 *
-	 * @returns The found `StringEncoding`.
+	 * This uses the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1542113-cfstringconvertwindowscodepageto?language=objc | CFStringConvertWindowsCodepageToEncoding}.
 	 *
-	 * @see [`CFStringConvertWindowsCodepageToEncoding`](https://developer.apple.com/documentation/corefoundation/1542113-cfstringconvertwindowscodepageto?language=objc)
+	 * @returns The found {@link StringEncoding}.
 	 */
 	static byWindowsCodepage(codepage: number): StringEncoding;
 
 	/**
-	 * Looks up a `StringEncoding` by corresponding Cocoa encoding constant.
+	 * Looks up a {@link StringEncoding} by corresponding Cocoa encoding constant.
 	 *
 	 * @remarks
-	 * Throws `UnrecognizedEncodingError` if not recognized.
+	 * Throws {@link UnrecognizedEncodingError} if not recognized and supported.
 	 *
-	 * @returns The found `StringEncoding`.
+	 * This uses the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1542787-cfstringconvertnsstringencodingt?language=objc | CFStringConvertNSStringEncodingToEncoding}.
 	 *
-	 * @see [`CFStringConvertNSStringEncodingToEncoding`](https://developer.apple.com/documentation/corefoundation/1542787-cfstringconvertnsstringencodingt?language=objc)
+	 * @returns The found {@link StringEncoding}.
 	 */
 	static byNSStringEncoding(nsStringEncoding: number): StringEncoding;
 
 	/**
-	 * The default `StringEncoding` used by the operating system when it creates strings.
+	 * The default {@link StringEncoding} used by the operating system when it creates strings.
 	 *
-	 * @see [`CFStringGetSystemEncoding`](https://developer.apple.com/documentation/corefoundation/1541720-cfstringgetsystemencoding?language=objc)
+	 * @remarks
+	 * This uses the Core Foundation function {@link https://developer.apple.com/documentation/corefoundation/1541720-cfstringgetsystemencoding?language=objc | CFStringGetSystemEncoding}.
 	 */
 	static readonly system: StringEncoding;
 }
 
+/** An object containing some encoded text in a `Buffer`, along with the encoding used. */
 export interface TextAndEncoding {
+	/** The encoding of the `text`. */
 	encoding: StringEncoding;
+	/** The encoded text. */
 	text: Buffer;
 }
 
+/**
+ * Encodes the given string, using the smallest representation supported by Core Foundation.
+ *
+ * @param content - The text to encode.
+ * @param options - Options for encoding, including an {@link EncodeOptionsWithIsEncodingOk.isEncodingOk | options.isEncodingOk} method.
+ * @returns If {@link EncodeOptionsWithIsEncodingOk.isEncodingOk | options.isEncodingOk} returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
+ */
 export declare function encodeSmallest(content: string, options: EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
+
+/**
+ * Encodes the given string, using the smallest representation supported by Core Foundation.
+ *
+ * @param content - The text to encode.
+ * @param options - Options for encoding.
+ * @returns The encoded text and chosen encoding.
+ */
 export declare function encodeSmallest(content: string, options?: EncodeOptions): TextAndEncoding;
 
+/**
+ * Encodes the given string, using the fastest encoding supported by Core Foundation.
+ *
+ * @param content - The text to encode.
+ * @param options - Options for encoding, including an {@link EncodeOptionsWithIsEncodingOk.isEncodingOk | options.isEncodingOk} method.
+ * @returns If {@link EncodeOptionsWithIsEncodingOk.isEncodingOk | options.isEncodingOk} returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
+ */
 export declare function encodeFastest(content: string, options: EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
+
+/**
+ * Encodes the given string, using the fastest encoding supported by Core Foundation.
+ *
+ * @param content - The text to encode.
+ * @param options - Options for encoding.
+ * @returns The encoded text and chosen encoding.
+ */
 export declare function encodeFastest(content: string, options?: EncodeOptions): TextAndEncoding;
 
+/**
+ * Converts encoded text from one encoding to another. This is faster than decoding to a JavaScript string and then encoding the string.
+ *
+ * @remarks
+ * Throws `NotRepresentableError` if the text in `from` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
+ *
+ * @param from - The encoded text to transcode.
+ * @param fromEncoding - The encoding of the text in `from`.
+ * @param toEncoding - The desired encoding.
+ * @param options - Options for both decoding and encoding.
+ * @returns The text in `from`, encoded in `toEncoding` instead of `fromEncoding`.
+ */
 export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
 
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
@@ -137,13 +203,30 @@ export declare function transcodeSmallest(content: BufferLike, fromEncoding: Str
 export declare function transcodeFastest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & EncodeOptionsWithIsEncodingOk): TextAndEncoding | null;
 export declare function transcodeFastest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): TextAndEncoding;
 
+/**
+ * Options for decoding.
+ *
+ * @remarks
+ * This interface is an empty placeholder, as there are currently no pertinent decoding options supported by Core Foundation.
+ */
 export interface DecodeOptions {
 }
 
+/** Options for encoding. */
 export interface EncodeOptions {
+	/**
+	 * The character that will serve as a substitute for characters that cannot be represented in the requested encoding. It must be an integer between 1 and 255, inclusive.
+	 */
 	lossByte?: number;
 }
 
+/** Additional options for encoding with {@link encodeSmallest}, {@link encodeFastest}, {@link transcodeSmallest}, and {@link transcodeFastest}. */
 export interface EncodeOptionsWithIsEncodingOk extends EncodeOptions {
+	/**
+	 * A callback for deciding whether to encode with the given {@link StringEncoding}. This method is called by {@link encodeSmallest}, {@link encodeFastest}, {@link transcodeSmallest}, and {@link transcodeFastest} to let the application decide whether to proceed with Core Foundation's chosen smallest or fastest encoding, before actually performing the work of encoding the string.
+	 *
+	 * @param encoding - The selected {@link StringEncoding}.
+	 * @returns `true` if the string should be encoded; `false` to abort encoding. If this method returns `false`, then the calling function ({@link encodeSmallest}, {@link encodeFastest}, {@link transcodeSmallest}, or {@link transcodeFastest}) will return `null` instead of the encoded text.
+	 */
 	isEncodingOk(encoding: StringEncoding): boolean;
 }
