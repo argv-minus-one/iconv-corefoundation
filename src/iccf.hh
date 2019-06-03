@@ -14,7 +14,7 @@ struct Iccf {
 	}
 
 	enum class EncodingSpecifierKind : uint32_t {
-		CFStringEncoding = 1,
+		CFStringEncoding = 0,
 		IANACharSetName,
 		WindowsCodepage,
 		NSStringEncoding
