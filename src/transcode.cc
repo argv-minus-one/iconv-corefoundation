@@ -116,10 +116,6 @@ static Napi::Value selectAndEncode(
 	);
 }
 
-static Napi::Value encodeFastest(const Napi::CallbackInfo &info) {
-	return selectAndEncode(info, CFStringGetFastestEncoding);
-}
-
 static Napi::Value encodeSmallest(const Napi::CallbackInfo &info) {
 	return selectAndEncode(info, CFStringGetSmallestEncoding);
 }
@@ -184,10 +180,6 @@ static Napi::Value transcodeSmallest(const Napi::CallbackInfo &info) {
 	return selectAndTranscode(info, CFStringGetSmallestEncoding);
 }
 
-static Napi::Value transcodeFastest(const Napi::CallbackInfo &info) {
-	return selectAndTranscode(info, CFStringGetFastestEncoding);
-}
-
 EncodeOptions::EncodeOptions(Napi::Value options) {
 	if (options.IsObject()) {
 		const Napi::Object _options = options.ToObject();
@@ -210,10 +202,8 @@ void TranscodeInit(Napi::Env env, Napi::Object exports, Iccf *iccf) {
 	Napi::HandleScope scope(env);
 
 	exports.DefineProperties({
-		Napi::PropertyDescriptor::Value("encodeFastest", Napi::Function::New(env, encodeFastest, "encodeFastest", iccf), napi_enumerable),
 		Napi::PropertyDescriptor::Value("encodeSmallest", Napi::Function::New(env, encodeSmallest, "encodeSmallest", iccf), napi_enumerable),
 		Napi::PropertyDescriptor::Value("transcode", Napi::Function::New(env, transcode, "transcode", iccf), napi_enumerable),
-		Napi::PropertyDescriptor::Value("transcodeSmallest", Napi::Function::New(env, transcodeSmallest, "transcodeSmallest", iccf), napi_enumerable),
-		Napi::PropertyDescriptor::Value("transcodeFastest", Napi::Function::New(env, transcodeFastest, "transcodeFastest", iccf), napi_enumerable)
+		Napi::PropertyDescriptor::Value("transcodeSmallest", Napi::Function::New(env, transcodeSmallest, "transcodeSmallest", iccf), napi_enumerable)
 	});
 }

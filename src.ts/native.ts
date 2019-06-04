@@ -166,24 +166,6 @@ export declare function encodeSmallest(content: string, options?: SelectAndEncod
 export declare function encodeSmallest(content: string, options: SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
- * Encodes the given string, using the fastest encoding supported by Core Foundation.
- *
- * @param content - The text to encode.
- * @param options - Options for encoding.
- * @returns The encoded text and chosen encoding.
- */
-export declare function encodeFastest(content: string, options?: SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
-
-/**
- * Encodes the given string, using the fastest encoding supported by Core Foundation.
- *
- * @param content - The text to encode.
- * @param options - Options for encoding, including an {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} method.
- * @returns If {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} exists and returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
- */
-export declare function encodeFastest(content: string, options: SelectAndEncodeOptions): TextAndEncoding | null;
-
-/**
  * Converts encoded text from one encoding to another. This is faster than decoding to a JavaScript string and then encoding the string.
  *
  * @remarks
@@ -199,9 +181,6 @@ export declare function transcode(from: BufferLike, fromEncoding: StringEncoding
 
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
-
-export declare function transcodeFastest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
-export declare function transcodeFastest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
  * Tests whether an encoding exists and is supported.
@@ -227,13 +206,13 @@ export interface EncodeOptions {
 	lossByte?: number;
 }
 
-/** Additional options for encoding with {@link encodeSmallest}, {@link encodeFastest}, {@link transcodeSmallest}, and {@link transcodeFastest}. */
+/** Additional options for encoding with {@link encodeSmallest} and {@link transcodeSmallest} */
 export interface SelectAndEncodeOptions extends EncodeOptions {
 	/**
-	 * A callback for deciding whether to encode with the given {@link StringEncoding}. This method is called by {@link encodeSmallest}, {@link encodeFastest}, {@link transcodeSmallest}, and {@link transcodeFastest} to let the application decide whether to proceed with Core Foundation's chosen smallest or fastest encoding, before actually performing the work of encoding the string.
+	 * A callback for deciding whether to encode with the given {@link StringEncoding}. This method is called by {@link encodeSmallest} and {@link transcodeSmallest} to let the application decide whether to proceed with Core Foundation's chosen smallest encoding, before actually performing the work of encoding the string.
 	 *
 	 * @param encoding - The selected {@link StringEncoding}.
-	 * @returns `true` if the string should be encoded; `false` to abort encoding. If this method returns `false`, then the calling function ({@link encodeSmallest}, {@link encodeFastest}, {@link transcodeSmallest}, or {@link transcodeFastest}) will return `null` instead of the encoded text.
+	 * @returns `true` if the string should be encoded; `false` to abort encoding. If this method returns `false`, then the calling function ({@link encodeSmallest} or {@link transcodeSmallest}) will return `null` instead of the encoded text.
 	 */
 	isEncodingOk?(encoding: StringEncoding): boolean;
 }

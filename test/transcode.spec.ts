@@ -1,5 +1,5 @@
 import * as Chai from "chai";
-import { encodeFastest, encodeSmallest, NotRepresentableError, SelectAndEncodeOptions, StringEncoding, TextAndEncoding, transcode, transcodeFastest, transcodeSmallest } from "..";
+import { encodeSmallest, NotRepresentableError, SelectAndEncodeOptions, StringEncoding, TextAndEncoding, transcode, transcodeSmallest } from "..";
 import ChaiBytes = require("chai-bytes");
 
 Chai.use(ChaiBytes);
@@ -56,7 +56,7 @@ describe("transcode", () => {
 	});
 });
 
-describe("encodeSmallest & encodeFastest", () => {
+describe("encodeSmallest", () => {
 	const input = "2 ÷ 2 = 1¶";
 
 	function checkRoundTrip(encoded: TextAndEncoding): void {
@@ -64,18 +64,13 @@ describe("encodeSmallest & encodeFastest", () => {
 	}
 
 	it("should round-trip, and choose a sensible smallest encoding", () => {
-		let encoded = encodeSmallest(input);
+		const encoded = encodeSmallest(input);
 		// For any given string (that isn't all ASCII), any representation of Unicode will be byte-wise larger than a single-byte character set covering all of the characters. Therefore, the smallest encoding should *not* be a UTF.
 		assert.notMatch(encoded.encoding.ianaCharSetName, /^UTF/i, "Chose a nonsensical smallest encoding");
-		checkRoundTrip(encoded);
-
-		encoded = encodeFastest(input);
-		// The fastest encoding is probably (but is not guaranteed to be) UTF-16, so there's no way to check the sanity of the chosen encoding.
 		checkRoundTrip(encoded);
 	});
 
 	it("should respect isEncodingOk", () => {
-		for (const smallest of [true, false])
 		for (const shouldAccept of [true, false]) {
 			const options: SelectAndEncodeOptions = {
 				isEncodingOk() {
@@ -83,7 +78,7 @@ describe("encodeSmallest & encodeFastest", () => {
 				}
 			};
 
-			const encoded = (smallest ? encodeSmallest : encodeFastest)(input, options);
+			const encoded = encodeSmallest(input, options);
 
 			(shouldAccept ? assert.isNotNull : assert.isNull)(encoded);
 			if (shouldAccept)
@@ -92,7 +87,7 @@ describe("encodeSmallest & encodeFastest", () => {
 	});
 });
 
-describe("transcodeSmallest & transcodeFastest", () => {
+describe("transcodeSmallest", () => {
 	const inputString = "4 ÷ 2 = 2¶";
 	const input = Buffer.from(inputString, "latin1");
 	const inputEncoding = StringEncoding.byIANACharSetName("iso-8859-1");
@@ -104,7 +99,6 @@ describe("transcodeSmallest & transcodeFastest", () => {
 	}
 
 	it("should round-trip and respect isEncodingOk", () => {
-		for (const smallest of [true, false])
 		for (const shouldAccept of [true, false]) {
 			const options: SelectAndEncodeOptions = {
 				isEncodingOk() {
@@ -112,7 +106,7 @@ describe("transcodeSmallest & transcodeFastest", () => {
 				}
 			};
 
-			const encoded = (smallest ? transcodeSmallest : transcodeFastest)(input, inputEncoding, options);
+			const encoded = transcodeSmallest(input, inputEncoding, options);
 
 			(shouldAccept ? assert.isNotNull : assert.isNull)(encoded);
 			if (shouldAccept)
