@@ -179,7 +179,24 @@ export declare function encodeSmallest(content: string, options: SelectAndEncode
  */
 export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
 
+/**
+ * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
+ *
+ * @param content - The text to encode.
+ * @param fromEncoding - The encoding of the text.
+ * @param options - Options for both decoding and encoding.
+ * @returns The encoded text and chosen encoding.
+ */
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
+
+/**
+ * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
+ *
+ * @param content - The text to encode.
+ * @param fromEncoding - The encoding of the text.
+ * @param options - Options for both decoding and encoding, possibly including an {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} method.
+ * @returns If {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} exists and returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
+ */
 export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
