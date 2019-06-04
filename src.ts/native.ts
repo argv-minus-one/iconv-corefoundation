@@ -204,6 +204,13 @@ export declare function transcodeFastest(content: BufferLike, fromEncoding: Stri
 export declare function transcodeFastest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): TextAndEncoding;
 
 /**
+ * Tests whether an encoding exists and is supported.
+ *
+ * @param encoding - The IANA character set name of the encoding.
+ */
+export declare function encodingExists(encoding: string): boolean;
+
+/**
  * Options for decoding.
  *
  * @remarks

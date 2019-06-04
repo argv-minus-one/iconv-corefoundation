@@ -4,6 +4,13 @@
 #include "napi.hh"
 #include <sstream>
 
+static Napi::Value encodingExists(const Napi::CallbackInfo &info) {
+	auto jsEncodingName = info[0].As<Napi::String>();
+	auto encodingName = NapiStringToCFString(jsEncodingName);
+	auto encoding = CFStringConvertIANACharSetNameToEncoding(encodingName);
+	return Napi::Boolean::New(info.Env(), encoding != kCFStringEncodingInvalidId);
+}
+
 static Napi::Object init(Napi::Env env, Napi::Object exports) {
 	return Napi::Function::New(env, [] (const Napi::CallbackInfo &info) {
 		const auto env = info.Env();
@@ -46,9 +53,12 @@ Iccf::Iccf(Napi::Object imports, Napi::Object exports)
 , _newFormattedTypeError(funcRef(imports, "newFormattedTypeError"))
 , StringEncoding(imports.Env(), this)
 {
+	const auto env = imports.Env();
+
 	exports.DefineProperties({
-		Napi::PropertyDescriptor::Value("StringEncoding", StringEncoding.constructor(), napi_enumerable)
+		Napi::PropertyDescriptor::Value("StringEncoding", StringEncoding.constructor(), napi_enumerable),
+		Napi::PropertyDescriptor::Function(env, exports, "encodingExists", encodingExists, napi_enumerable)
 	});
 
-	TranscodeInit(imports.Env(), exports, this);
+	TranscodeInit(env, exports, this);
 }

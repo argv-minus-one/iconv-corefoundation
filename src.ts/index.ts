@@ -1,26 +1,7 @@
 import { BufferLike, DecodeOptions, EncodeOptions, StringEncoding } from "./native";
-import { UnrecognizedEncodingError } from "./errors";
 
 export * from "./errors";
 export * from "./native";
-
-/**
- * Tests whether an encoding exists and is supported.
- *
- * @param encoding - The IANA character set name of the encoding.
- */
-export function encodingExists(encoding: string): boolean {
-	try {
-		StringEncoding.byIANACharSetName(encoding);
-	}
-	catch (e) {
-		if (e instanceof UnrecognizedEncodingError)
-			return false;
-		else
-			throw e;
-	}
-	return true;
-}
 
 /**
  * Convenience alias for {@link StringEncoding.decode}.
