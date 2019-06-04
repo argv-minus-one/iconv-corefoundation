@@ -1,5 +1,5 @@
 import * as Chai from "chai";
-import { encodeFastest, EncodeOptionsWithIsEncodingOk, encodeSmallest, NotRepresentableError, StringEncoding, TextAndEncoding, transcode, transcodeSmallest, transcodeFastest } from "..";
+import { encodeFastest, encodeSmallest, NotRepresentableError, SelectAndEncodeOptions, StringEncoding, TextAndEncoding, transcode, transcodeFastest, transcodeSmallest } from "..";
 import ChaiBytes = require("chai-bytes");
 
 Chai.use(ChaiBytes);
@@ -77,7 +77,7 @@ describe("encodeSmallest & encodeFastest", () => {
 	it("should respect isEncodingOk", () => {
 		for (const smallest of [true, false])
 		for (const shouldAccept of [true, false]) {
-			const options: EncodeOptionsWithIsEncodingOk = {
+			const options: SelectAndEncodeOptions = {
 				isEncodingOk() {
 					return shouldAccept;
 				}
@@ -106,7 +106,7 @@ describe("transcodeSmallest & transcodeFastest", () => {
 	it("should round-trip and respect isEncodingOk", () => {
 		for (const smallest of [true, false])
 		for (const shouldAccept of [true, false]) {
-			const options: EncodeOptionsWithIsEncodingOk = {
+			const options: SelectAndEncodeOptions = {
 				isEncodingOk() {
 					return shouldAccept;
 				}
