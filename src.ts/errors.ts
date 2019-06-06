@@ -7,7 +7,7 @@ type StringEncoding = import("./index").StringEncoding;
 /** Signals that the given text cannot be fully encoded in the chosen {@link StringEncoding}. */
 export class NotRepresentableError extends Error {
 	private constructor(text: unknown, encoding: StringEncoding) {
-		super(`Not fully representable in ${encoding}: ${inspect(typeof text === "string" ? cliTruncate(text, 15) : text)}`);
+		super(`Not fully representable in ${encoding}:\n${inspect(typeof text === "string" ? cliTruncate(text, 65) : text)}`);
 	}
 }
 
