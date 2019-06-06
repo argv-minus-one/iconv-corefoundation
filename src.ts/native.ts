@@ -166,9 +166,11 @@ export declare function encodeSmallest(text: string, options?: SelectAndEncodeOp
 export declare function encodeSmallest(text: string, options: SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
- * Converts encoded text from one encoding to another. This is faster than decoding to a JavaScript string and then encoding the string.
+ * Converts encoded text from one encoding to another.
  *
  * @remarks
+ * This is faster than decoding to a JavaScript string and then encoding the string.
+ *
  * Throws `NotRepresentableError` if the `text` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
  *
  * @param text - The encoded text to transcode.
