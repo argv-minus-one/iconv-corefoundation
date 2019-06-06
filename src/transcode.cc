@@ -30,23 +30,23 @@ static Iccf *getIccf(const Napi::CallbackInfo &info) {
 static Napi::Value selectAndEncode(
 	const Napi::Env env,
 	const Iccf *iccf,
-	const CFStringRef string,
+	const CFStringRef text,
 	const EncodeOptions &options,
 	const std::function<StringEncoding *(CFStringRef)> &selectEncoding,
 	StringEncoding **selectedEncoding = nullptr,
 	const std::function<Napi::Value(CFStringRef, Napi::Env)> &origString = CFStringToNapiString
 ) {
-	const auto encoding = selectEncoding(string);
+	const auto encoding = selectEncoding(text);
 
 	if (selectedEncoding != nullptr)
 		*selectedEncoding = encoding;
 
 	if (options.isEncodingOk(encoding)) {
-		const auto text = encoding->cfEncode(env, string, options.lossByte, origString);
+		const auto encodedText = encoding->cfEncode(env, text, options.lossByte, origString);
 
 		auto result = Napi::Object::New(env);
 		result["encoding"] = encoding->Value();
-		result["text"] = text;
+		result["text"] = encodedText;
 		return result;
 	}
 	else
@@ -56,7 +56,7 @@ static Napi::Value selectAndEncode(
 static Napi::Value selectAndEncode(
 	const Napi::Env env,
 	const Iccf *iccf,
-	const CFStringRef string,
+	const CFStringRef text,
 	const EncodeOptions &options,
 	const std::function<StringEncoding *(CFStringRef)> &selectEncoding,
 	StringEncoding **selectedEncoding,
@@ -65,7 +65,7 @@ static Napi::Value selectAndEncode(
 	return selectAndEncode(
 		env,
 		iccf,
-		string,
+		text,
 		options,
 		selectEncoding,
 		selectedEncoding,
@@ -81,7 +81,7 @@ static Napi::Value selectAndEncode(
 static Napi::Value selectAndEncode(
 	const Napi::Env env,
 	const Iccf *iccf,
-	const CFStringRef string,
+	const CFStringRef text,
 	const EncodeOptions &options,
 	const std::function<StringEncoding *(CFStringRef)> &selectEncoding,
 	const Napi::Value &origString
@@ -89,7 +89,7 @@ static Napi::Value selectAndEncode(
 	return selectAndEncode(
 		env,
 		iccf,
-		string,
+		text,
 		options,
 		selectEncoding,
 		nullptr,
@@ -99,16 +99,16 @@ static Napi::Value selectAndEncode(
 
 static Napi::Value selectAndEncode(
 	const Napi::CallbackInfo &info,
-	CFStringEncoding (*selectEncoding)(CFStringRef string)
+	CFStringEncoding (*selectEncoding)(CFStringRef text)
 ) {
 	const auto env = info.Env();
 	const auto iccf = getIccf(info);
-	const Napi::Value string = info[0];
+	const Napi::Value text = info[0];
 
 	return selectAndEncode(
 		env,
 		iccf,
-		NapiStringToCFString(string.ToString()),
+		NapiStringToCFString(text.ToString()),
 		EncodeOptions(info[1]),
 		[&] (auto cfString) {
 			return iccf->StringEncoding.New(env, selectEncoding(cfString));
@@ -125,20 +125,20 @@ static Napi::Value transcode(const Napi::CallbackInfo &info) {
 	const auto iccf = getIccf(info);
 	const EncodeOptions encodeOptions(info[3]);
 	const auto fromEncoding = StringEncoding::UnwrapOrThrow(iccf, info[1]), toEncoding = StringEncoding::UnwrapOrThrow(iccf, info[2]);
-	const Napi::Value from = info[0];
+	const Napi::Value text = info[0];
 
 	return toEncoding->cfEncode(
 		env,
-		fromEncoding->cfDecode(from),
+		fromEncoding->cfDecode(text),
 		encodeOptions.lossByte,
-		from
+		text
 	);
 }
 
 static Napi::Value selectAndTranscode(
 	const Napi::Env env,
 	const Iccf *iccf,
-	const Napi::Value &from,
+	const Napi::Value &text,
 	const DecodeOptions &decodeOptions,
 	const EncodeOptions &encodeOptions,
 	const StringEncoding *fromEncoding,
@@ -148,17 +148,17 @@ static Napi::Value selectAndTranscode(
 	return selectAndEncode(
 		env,
 		iccf,
-		fromEncoding->cfDecode(from),
+		fromEncoding->cfDecode(text),
 		encodeOptions,
 		selectToEncoding,
 		selectedToEncoding,
-		from
+		text
 	);
 }
 
 static Napi::Value selectAndTranscode(
 	const Napi::CallbackInfo &info,
-	CFStringEncoding (*selectToEncoding)(CFStringRef string)
+	CFStringEncoding (*selectToEncoding)(CFStringRef text)
 ) {
 	const auto env = info.Env();
 	const auto iccf = getIccf(info);

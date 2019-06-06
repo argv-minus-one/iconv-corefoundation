@@ -108,14 +108,14 @@ std::optional<StringEncoding *> StringEncoding::Unwrap(Napi::Value wrapper) {
 
 Napi::Buffer<uint8_t> StringEncoding::cfEncode(
 	Napi::Env env,
-	CFStringRef string,
+	CFStringRef text,
 	UInt8 lossByte,
 	std::function<Napi::Value(CFStringRef, Napi::Env)> origString
 ) const {
-	auto data = CFStringCreateExternalRepresentation(kCFAllocatorMalloc, string, _cfStringEncoding, lossByte);
+	auto data = CFStringCreateExternalRepresentation(kCFAllocatorMalloc, text, _cfStringEncoding, lossByte);
 
 	if (data == nullptr)
-		throw _class->iccf->newNotRepresentableError(env, origString(string, env), Value());
+		throw _class->iccf->newNotRepresentableError(env, origString(text, env), Value());
 
 	const auto length = CFDataGetLength(data);
 
@@ -131,21 +131,21 @@ Napi::Buffer<uint8_t> StringEncoding::cfEncode(
 	);
 }
 
-CFStringHandle StringEncoding::cfDecode(Napi::Value buffer) const {
-	const auto env = buffer.Env();
+CFStringHandle StringEncoding::cfDecode(Napi::Value text) const {
+	const auto env = text.Env();
 	void *data;
 	size_t length;
 
 	{
 		class NotABuffer {};
 		try {
-			if (buffer.IsArrayBuffer())
-				throwIfFailed(env, napi_get_arraybuffer_info(env, buffer, &data, &length));
-			else if (buffer.IsDataView())
-				throwIfFailed(env, napi_get_dataview_info(env, buffer, &length, &data, nullptr, nullptr));
-			else if (buffer.IsTypedArray() || buffer.IsBuffer()) {
+			if (text.IsArrayBuffer())
+				throwIfFailed(env, napi_get_arraybuffer_info(env, text, &data, &length));
+			else if (text.IsDataView())
+				throwIfFailed(env, napi_get_dataview_info(env, text, &length, &data, nullptr, nullptr));
+			else if (text.IsTypedArray() || text.IsBuffer()) {
 				napi_typedarray_type type;
-				throwIfFailed(env, napi_get_typedarray_info(env, buffer, &type, &length, &data, nullptr, nullptr));
+				throwIfFailed(env, napi_get_typedarray_info(env, text, &type, &length, &data, nullptr, nullptr));
 
 				if (type != napi_uint8_array)
 					throw NotABuffer();
@@ -154,7 +154,7 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value buffer) const {
 				throw NotABuffer();
 		}
 		catch (NotABuffer) {
-			throw _class->iccf->newFormattedTypeError(env, "a Buffer, ArrayBuffer, DataView, or Uint8Array", buffer);
+			throw _class->iccf->newFormattedTypeError(env, "a Buffer, ArrayBuffer, DataView, or Uint8Array", text);
 		}
 	}
 
@@ -169,7 +169,7 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value buffer) const {
 	);
 
 	if (cfString == nullptr)
-		throw _class->iccf->newNotRepresentableError(env, buffer, Value());
+		throw _class->iccf->newNotRepresentableError(env, text, Value());
 
 	return CFStringHandle(cfString);
 }
@@ -217,10 +217,10 @@ Napi::Value StringEncoding::decode(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value StringEncoding::encode(const Napi::CallbackInfo &info) {
-	auto string = info[0].ToString();
+	auto text = info[0].ToString();
 	EncodeOptions options(info[1]);
 
-	return cfEncode(info.Env(), NapiStringToCFString(string), options.lossByte, string);
+	return cfEncode(info.Env(), NapiStringToCFString(text), options.lossByte, text);
 }
 
 Napi::String StringEncoding::name(const Napi::Env &env) {

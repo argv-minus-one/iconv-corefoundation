@@ -64,25 +64,25 @@ export declare class StringEncoding {
 	readonly name: string;
 
 	/**
-	 * Decodes the text in the given `buffer`.
+	 * Decodes the given text.
 	 *
-	 * @param buffer - The encoded text.
+	 * @param text - The encoded text.
 	 * @param options - Options for decoding.
 	 * @returns The decoded text, as a string.
 	 */
-	decode(buffer: BufferLike, options?: DecodeOptions): string;
+	decode(text: BufferLike, options?: DecodeOptions): string;
 
 	/**
-	 * Encodes the given string.
+	 * Encodes the given text.
 	 *
 	 * @remarks
-	 * Throws {@link NotRepresentableError} if the `string` cannot be fully represented in this encoding, and `options` does not contain a `lossByte`.
+	 * Throws {@link NotRepresentableError} if the `text` cannot be fully represented in this encoding, and `options` does not contain a `lossByte`.
 	 *
-	 * @param string - The text to encode.
+	 * @param text - The text to encode.
 	 * @param options - Options for encoding.
 	 * @returns The encoded text, in a `Buffer`.
 	 */
-	encode(string: string, options?: EncodeOptions): Buffer;
+	encode(text: string, options?: EncodeOptions): Buffer;
 
 	/**
 	 * Looks up a {@link StringEncoding} by its {@link https://developer.apple.com/documentation/corefoundation/cfstringencoding?language=objc | numeric identifier}.
@@ -148,56 +148,56 @@ export interface TextAndEncoding {
 }
 
 /**
- * Encodes the given string, using the smallest representation supported by Core Foundation.
+ * Encodes the given text, using the smallest representation supported by Core Foundation.
  *
- * @param content - The text to encode.
+ * @param text - The text to encode.
  * @param options - Options for encoding.
  * @returns The encoded text and chosen encoding.
  */
-export declare function encodeSmallest(content: string, options?: SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
+export declare function encodeSmallest(text: string, options?: SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
 
 /**
- * Encodes the given string, using the smallest representation supported by Core Foundation.
+ * Encodes the given text, using the smallest representation supported by Core Foundation.
  *
- * @param content - The text to encode.
+ * @param text - The text to encode.
  * @param options - Options for encoding, possibly including an {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} method.
  * @returns If {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} exists and returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
  */
-export declare function encodeSmallest(content: string, options: SelectAndEncodeOptions): TextAndEncoding | null;
+export declare function encodeSmallest(text: string, options: SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
  * Converts encoded text from one encoding to another. This is faster than decoding to a JavaScript string and then encoding the string.
  *
  * @remarks
- * Throws `NotRepresentableError` if the text in `from` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
+ * Throws `NotRepresentableError` if the `text` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
  *
- * @param from - The encoded text to transcode.
- * @param fromEncoding - The encoding of the text in `from`.
+ * @param text - The encoded text to transcode.
+ * @param fromEncoding - The encoding of the `text`.
  * @param toEncoding - The desired encoding.
  * @param options - Options for both decoding and encoding.
- * @returns The text in `from`, encoded in `toEncoding` instead of `fromEncoding`.
+ * @returns The `text`, encoded in `toEncoding` instead of `fromEncoding`.
  */
-export declare function transcode(from: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
+export declare function transcode(text: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
 
 /**
  * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
  *
- * @param content - The text to encode.
+ * @param text - The text to encode.
  * @param fromEncoding - The encoding of the text.
  * @param options - Options for both decoding and encoding.
  * @returns The encoded text and chosen encoding.
  */
-export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
+export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
 
 /**
  * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
  *
- * @param content - The text to encode.
+ * @param text - The text to encode.
  * @param fromEncoding - The encoding of the text.
  * @param options - Options for both decoding and encoding, possibly including an {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} method.
  * @returns If {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} exists and returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
  */
-export declare function transcodeSmallest(content: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
+export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
  * Tests whether an encoding exists and is supported.
@@ -218,18 +218,26 @@ export interface DecodeOptions {
 /** Options for encoding. */
 export interface EncodeOptions {
 	/**
-	 * The character that will serve as a substitute for characters that cannot be represented in the requested encoding. It must be an integer between 1 and 255, inclusive.
+	 * Substitute for unrepresentable characters.
+	 *
+	 * @remarks
+	 * If the input text contains a character that is not representable in the output encoding, then this byte will be inserted as a placeholder in the output text.
+	 *
+	 * This property, if present, must be an integer between 1 and 255, inclusive.
 	 */
 	lossByte?: number;
 }
 
-/** Additional options for encoding with {@link encodeSmallest} and {@link transcodeSmallest} */
+/** Additional options for encoding with `encodeSmallest` and `transcodeSmallest`. */
 export interface SelectAndEncodeOptions extends EncodeOptions {
 	/**
-	 * A callback for deciding whether to encode with the given {@link StringEncoding}. This method is called by {@link encodeSmallest} and {@link transcodeSmallest} to let the application decide whether to proceed with Core Foundation's chosen smallest encoding, before actually performing the work of encoding the string.
+	 * Decides whether to encode with the given {@link StringEncoding}.
+	 *
+	 * @remarks
+	 * This method is called by `encodeSmallest` and `transcodeSmallest` to let the application decide whether to proceed with Core Foundation's chosen smallest encoding, before actually performing the work of encoding the text.
 	 *
 	 * @param encoding - The selected {@link StringEncoding}.
-	 * @returns `true` if the string should be encoded; `false` to abort encoding. If this method returns `false`, then the calling function ({@link encodeSmallest} or {@link transcodeSmallest}) will return `null` instead of the encoded text.
+	 * @returns `true` if the text should be encoded; `false` to abort encoding. If this method returns `false`, then the calling function (`encodeSmallest` or `transcodeSmallest`) will return `null` instead of the encoded text.
 	 */
 	isEncodingOk?(encoding: StringEncoding): boolean;
 }

@@ -9,8 +9,8 @@ struct Iccf {
 
 	Iccf(Napi::Object imports, Napi::Object exports);
 
-	inline Napi::Error newNotRepresentableError(const Napi::Env env, Napi::Value string, Napi::Object encoding) const {
-		return NotRepresentableError.New({ string, encoding }).As<Napi::Error>();
+	inline Napi::Error newNotRepresentableError(const Napi::Env env, Napi::Value text, Napi::Object encoding) const {
+		return NotRepresentableError.New({ text, encoding }).As<Napi::Error>();
 	}
 
 	enum class EncodingSpecifierKind : uint32_t {

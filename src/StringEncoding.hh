@@ -78,20 +78,20 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 
 	Napi::Buffer<uint8_t> cfEncode(
 		Napi::Env env,
-		CFStringRef string,
+		CFStringRef text,
 		UInt8 lossByte = 0,
 		std::function<Napi::Value(CFStringRef, Napi::Env)> origString = CFStringToNapiString
 	) const;
 
 	inline Napi::Buffer<uint8_t> cfEncode(
 		Napi::Env env,
-		CFStringRef string,
+		CFStringRef text,
 		UInt8 lossByte,
 		Napi::Value origString
 	) const {
 		return cfEncode(
 			env,
-			string,
+			text,
 			lossByte,
 			[origString] (auto, auto) {
 				return origString;
@@ -101,18 +101,18 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 
 	inline Napi::Buffer<uint8_t> cfEncode(
 		Napi::Env env,
-		CFStringRef string,
+		CFStringRef text,
 		Napi::Value origString
 	) const {
 		return cfEncode(
 			env,
-			string,
+			text,
 			0,
 			origString
 		);
 	}
 
-	CFStringHandle cfDecode(Napi::Value buffer) const;
+	CFStringHandle cfDecode(Napi::Value text) const;
 };
 
 #include "iccf.hh"

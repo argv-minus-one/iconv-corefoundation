@@ -5,16 +5,16 @@
 
 static constexpr const bool isBigEndian = htonl(1) == 1;
 
-CFStringHandle NapiStringToCFString(const Napi::String string) {
+CFStringHandle NapiStringToCFString(const Napi::String text) {
 	// Napi::String::Utf16Value would be painfully inefficient for what we're doing: using it would involve *three* copies of the string (JS VM to std::u16string to CFString) per call to this function! Using raw N-API, we can reduce it to one copy (JS VM to buffer, then transfer ownership of buffer to CFString). I'd rather have zero copies, but N-API makes that impossible, unfortunately.
-	const napi_env env = string.Env();
+	const napi_env env = text.Env();
 	size_t length;
 
-	// Get length of string.
+	// Get length of text.
 	// Unfortunately, there is no N-API equivalent to CFStringGetFastestEncoding. We'll assume that UTF-16 is it, since several JavaScript string operations (like character indices) act on UTF-16 code units.
 	throwIfFailed(env, napi_get_value_string_utf16(
 		env,
-		string,
+		text,
 		nullptr,
 		0,
 		&length
@@ -26,14 +26,14 @@ CFStringHandle NapiStringToCFString(const Napi::String string) {
 		byteLength = length * 2,
 		byteLengthWithNull = lengthWithNull * 2;
 
-	// Allocate memory for string.
+	// Allocate memory for the string.
 	auto buf = static_cast<char16_t *>(CFAllocatorAllocate(kCFAllocatorDefault, byteLengthWithNull, 0));
 
 	try {
 		// Copy string contents.
 		throwIfFailed(env, napi_get_value_string_utf16(
 			env,
-			string,
+			text,
 			buf,
 			lengthWithNull,
 			nullptr
@@ -50,8 +50,8 @@ CFStringHandle NapiStringToCFString(const Napi::String string) {
 		);
 
 		if (cfstr == nullptr) {
-			auto error = Napi::Error::New(string.Env(), "CFStringCreateWithBytesNoCopy() failed to convert the supplied string.");
-			error.Set("string", string);
+			auto error = Napi::Error::New(text.Env(), "CFStringCreateWithBytesNoCopy() failed to convert the supplied text.");
+			error.Set("text", text);
 			throw error;
 		}
 
@@ -64,12 +64,12 @@ CFStringHandle NapiStringToCFString(const Napi::String string) {
 	}
 }
 
-Napi::String CFStringToNapiString(CFStringRef string, Napi::Env env) {
-	auto length = CFStringGetLength(string);
+Napi::String CFStringToNapiString(CFStringRef text, Napi::Env env) {
+	auto length = CFStringGetLength(text);
 
 	if (!isBigEndian) {
 		// Try to avoid copying. Only possible if the system is little-endian, because N-API only accepts little-endian UTF-16.
-		auto bytes = CFStringGetCharactersPtr(string);
+		auto bytes = CFStringGetCharactersPtr(text);
 		if (bytes != nullptr)
 			// This will still copy the string from CF memory to the JS heap, but at least it's copied only once.
 			return Napi::String::New(env, reinterpret_cast<const char16_t *>(bytes), length);
@@ -79,7 +79,7 @@ Napi::String CFStringToNapiString(CFStringRef string, Napi::Env env) {
 	// This code path, unfortunately, will copy the string twice: once from CFString to the buffer here, then again to copy the string to the JS heap.
 	const size_t byteLength = length * 2;
 	uint8_t bytes[byteLength];
-	auto charsConverted = CFStringGetBytes(string, { .length = length }, kCFStringEncodingUTF16LE, 0, false, bytes, byteLength, nullptr);
+	auto charsConverted = CFStringGetBytes(text, { .length = length }, kCFStringEncodingUTF16LE, 0, false, bytes, byteLength, nullptr);
 
 	// Make sure it's the correct length.
 	if (charsConverted != length) {
