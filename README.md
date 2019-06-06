@@ -32,7 +32,9 @@ In addition to the system requirements for using this package, building it also 
 
 GCC does not seem to work; it fails to compile Core Foundation header files.
 
-## API Overview
+## API
+
+[API documentation is in the `docs` folder.](docs/iconv-corefoundation.md)
 
 The API for this package centers around the `StringEncoding` class. Each instance of this class represents a character encoding, such as ASCII or Mac OS Roman. To get a `StringEncoding` instance, call one of the static methods starting with `by`, such as `byCFStringEncoding`. (`StringEncoding` may not be constructed directly. It is instantiated only by native code.) Instances of `StringEncoding` have several informational properties (such as `ianaCharSetName`, the corresponding IANA character set name) and the methods `encode` and `decode`.
 
@@ -43,5 +45,3 @@ There are also several top-level functions exported by this package, like `trans
 I have not benchmarked this code. I do not expect it to be fast. Encoding and decoding strings involves copying the string at least once, which is a fairly expensive operation, especially with large strings.
 
 There is no streaming API. Core Foundation does not seem to have any notion of streaming character set conversion, so neither does this package.
-
-Documentation is sparse. Most of the documentation for this package consists of documentation comments in the TypeScript files.
