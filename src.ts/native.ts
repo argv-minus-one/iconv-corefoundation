@@ -176,7 +176,7 @@ export declare function encodeSmallest(text: string, options: SelectAndEncodeOpt
  *
  * Throws {@link InvalidEncodedTextError} if the `text` is not valid in `fromEncoding`.
  *
- * Throws `NotRepresentableError` if the `text` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
+ * Throws {@link NotRepresentableError} if the `text` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
  *
  * @param text - The encoded text to transcode.
  * @param fromEncoding - The encoding of the `text`.
