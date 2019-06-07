@@ -25,3 +25,7 @@ decode(text: BufferLike, options?: DecodeOptions): string;
 
 The decoded text, as a string.
 
+## Remarks
+
+Throws [InvalidEncodedTextError](./iconv-corefoundation.invalidencodedtexterror.md) if the `text` is not valid in this encoding.
+

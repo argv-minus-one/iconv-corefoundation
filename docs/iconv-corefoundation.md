@@ -8,6 +8,7 @@
 
 |  Class | Description |
 |  --- | --- |
+|  [InvalidEncodedTextError](./iconv-corefoundation.invalidencodedtexterror.md) | Signals that the given encoded text is not valid in the chosen [StringEncoding](./iconv-corefoundation.stringencoding.md)<!-- -->. |
 |  [NotRepresentableError](./iconv-corefoundation.notrepresentableerror.md) | Signals that the given text cannot be fully encoded in the chosen [StringEncoding](./iconv-corefoundation.stringencoding.md)<!-- -->. |
 |  [StringEncoding](./iconv-corefoundation.stringencoding.md) | A character encoding, known to the Core Foundation framework. |
 |  [UnrecognizedEncodingError](./iconv-corefoundation.unrecognizedencodingerror.md) | Signals that the given [StringEncoding](./iconv-corefoundation.stringencoding.md) specifier (IANA character set name, <code>CFStringEncoding</code> constant, or the like) is not recognized or not supported. |

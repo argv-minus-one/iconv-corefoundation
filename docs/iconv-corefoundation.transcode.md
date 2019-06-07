@@ -31,5 +31,7 @@ The `text`<!-- -->, encoded in `toEncoding` instead of `fromEncoding`<!-- -->.
 
 This is faster than decoding to a JavaScript string and then encoding the string.
 
+Throws [InvalidEncodedTextError](./iconv-corefoundation.invalidencodedtexterror.md) if the `text` is not valid in `fromEncoding`<!-- -->.
+
 Throws `NotRepresentableError` if the `text` cannot be fully represented in `toEncoding`<!-- -->, and `options` does not contain a `lossByte`<!-- -->.
 

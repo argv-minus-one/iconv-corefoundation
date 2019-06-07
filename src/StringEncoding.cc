@@ -169,7 +169,7 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value text) const {
 	);
 
 	if (cfString == nullptr)
-		throw _class->iccf->newNotRepresentableError(env, text, Value());
+		throw _class->iccf->newInvalidEncodedTextError(env, text, Value());
 
 	return CFStringHandle(cfString);
 }

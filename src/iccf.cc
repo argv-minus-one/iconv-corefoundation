@@ -48,7 +48,8 @@ static Napi::FunctionReference funcRef(Napi::Object imports, const char *name) {
 }
 
 Iccf::Iccf(Napi::Object imports, Napi::Object exports)
-: NotRepresentableError(funcRef(imports, "NotRepresentableError"))
+: InvalidEncodedTextError(funcRef(imports, "InvalidEncodedTextError"))
+, NotRepresentableError(funcRef(imports, "NotRepresentableError"))
 , UnrecognizedEncodingError(funcRef(imports, "UnrecognizedEncodingError"))
 , _newFormattedTypeError(funcRef(imports, "newFormattedTypeError"))
 , StringEncoding(imports.Env(), this)

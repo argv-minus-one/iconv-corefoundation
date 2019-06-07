@@ -26,3 +26,7 @@ export declare function transcodeSmallest(text: BufferLike, fromEncoding: String
 
 If [options.isEncodingOk](./iconv-corefoundation.selectandencodeoptions.isencodingok.md) exists and returns `false`<!-- -->, this function returns `null`<!-- -->. Otherwise, this function returns the encoded text and chosen encoding.
 
+## Remarks
+
+Throws [InvalidEncodedTextError](./iconv-corefoundation.invalidencodedtexterror.md) if the `text` is not valid in `fromEncoding`<!-- -->.
+

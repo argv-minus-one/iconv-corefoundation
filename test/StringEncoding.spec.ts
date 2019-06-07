@@ -1,6 +1,6 @@
 import * as Chai from "chai";
 import { inspect } from "util";
-import { DecodeOptions, EncodeOptions, NotRepresentableError, StringEncoding, UnrecognizedEncodingError, encode, decode } from "..";
+import { DecodeOptions, EncodeOptions, InvalidEncodedTextError, NotRepresentableError, StringEncoding, UnrecognizedEncodingError, encode, decode } from "..";
 import ChaiBytes = require("chai-bytes");
 
 Chai.use(ChaiBytes);
@@ -225,5 +225,10 @@ describe("StringEncoding", () => {
 		assert.throws(() => StringEncoding.byNSStringEncoding("xyzzy" as any));
 		assert.throws(() => StringEncoding.byWindowsCodepage(0), UnrecognizedEncodingError);
 		assert.throws(() => StringEncoding.byWindowsCodepage("lolwut" as any));
+	});
+
+	it("should throw on invalid decode input", () => {
+		const text = Buffer.from([0x80, 0xa0, 0xc0, 0xf0]);
+		assert.throws(() => StringEncoding.byIANACharSetName("UTF-8").decode(text), InvalidEncodedTextError);
 	});
 });

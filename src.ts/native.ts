@@ -66,6 +66,9 @@ export declare class StringEncoding {
 	/**
 	 * Decodes the given text.
 	 *
+	 * @remarks
+	 * Throws {@link InvalidEncodedTextError} if the `text` is not valid in this encoding.
+	 *
 	 * @param text - The encoded text.
 	 * @param options - Options for decoding.
 	 * @returns The decoded text, as a string.
@@ -171,6 +174,8 @@ export declare function encodeSmallest(text: string, options: SelectAndEncodeOpt
  * @remarks
  * This is faster than decoding to a JavaScript string and then encoding the string.
  *
+ * Throws {@link InvalidEncodedTextError} if the `text` is not valid in `fromEncoding`.
+ *
  * Throws `NotRepresentableError` if the `text` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
  *
  * @param text - The encoded text to transcode.
@@ -184,6 +189,9 @@ export declare function transcode(text: BufferLike, fromEncoding: StringEncoding
 /**
  * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
  *
+ * @remarks
+ * Throws {@link InvalidEncodedTextError} if the `text` is not valid in `fromEncoding`.
+ *
  * @param text - The text to encode.
  * @param fromEncoding - The encoding of the text.
  * @param options - Options for both decoding and encoding.
@@ -193,6 +201,9 @@ export declare function transcodeSmallest(text: BufferLike, fromEncoding: String
 
 /**
  * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
+ *
+ * @remarks
+ * Throws {@link InvalidEncodedTextError} if the `text` is not valid in `fromEncoding`.
  *
  * @param text - The text to encode.
  * @param fromEncoding - The encoding of the text.

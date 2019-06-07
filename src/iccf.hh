@@ -4,10 +4,14 @@
 #include "StringEncoding.hh"
 
 struct Iccf {
-	const Napi::FunctionReference NotRepresentableError, UnrecognizedEncodingError, _newFormattedTypeError;
+	const Napi::FunctionReference InvalidEncodedTextError, NotRepresentableError, UnrecognizedEncodingError, _newFormattedTypeError;
 	const StringEncodingClass StringEncoding;
 
 	Iccf(Napi::Object imports, Napi::Object exports);
+
+	inline Napi::Error newInvalidEncodedTextError(const Napi::Env env, Napi::Value text, Napi::Object encoding) const {
+		return InvalidEncodedTextError.New({ text, encoding }).As<Napi::Error>();
+	}
 
 	inline Napi::Error newNotRepresentableError(const Napi::Env env, Napi::Value text, Napi::Object encoding) const {
 		return NotRepresentableError.New({ text, encoding }).As<Napi::Error>();

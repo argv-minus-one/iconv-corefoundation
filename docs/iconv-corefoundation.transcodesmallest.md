@@ -28,3 +28,7 @@ export declare function transcodeSmallest(text: BufferLike, fromEncoding: String
 
 The encoded text and chosen encoding.
 
+## Remarks
+
+Throws [InvalidEncodedTextError](./iconv-corefoundation.invalidencodedtexterror.md) if the `text` is not valid in `fromEncoding`<!-- -->.
+

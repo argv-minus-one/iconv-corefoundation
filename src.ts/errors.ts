@@ -11,6 +11,18 @@ export class NotRepresentableError extends Error {
 	}
 }
 
+/**
+ * Signals that the given encoded text is not valid in the chosen {@link StringEncoding}.
+ *
+ * @remarks
+ * Not all {@link StringEncoding}s can throw this error. Most single-byte encodings and some multi-byte encodings have a valid mapping for every possible sequence of bytes. However, some encodings (such as ASCII and UTF-8) don't consider all byte sequences valid; such encodings will throw this error if the input contains any invalid byte sequences.
+ */
+export class InvalidEncodedTextError extends Error {
+	private constructor(text: unknown, encoding: StringEncoding) {
+		super(`Input is not valid ${encoding}:\n${inspect(text)}`);
+	}
+}
+
 const specifierKinds = [
 	"CFStringEncoding",
 	"IANA charset name",
