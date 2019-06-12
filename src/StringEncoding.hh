@@ -23,6 +23,8 @@ class StringEncodingClass {
 	StringEncodingClass(Napi::Env env, Iccf *iccf);
 	StringEncoding *New(Napi::Env env, CFStringEncoding encoding) const;
 	StringEncoding *byIANACharSetName(const Napi::String name) const;
+	std::optional<StringEncoding *> Unwrap(Napi::Value wrapper, bool acceptStrings = true) const;
+	StringEncoding *UnwrapOrThrow(Napi::Value wrapper, bool acceptStrings = true) const;
 
 	inline Napi::Function constructor() const {
 		return _constructor.Value();
@@ -74,8 +76,6 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 
 	std::optional<Napi::String> ianaCharSetName(const Napi::Env &env);
 	Napi::String name(const Napi::Env &env);
-	static std::optional<StringEncoding *> Unwrap(Napi::Value wrapper);
-	static StringEncoding *UnwrapOrThrow(Iccf *iccf, Napi::Value wrapper);
 
 	Napi::Buffer<uint8_t> cfEncode(
 		Napi::Env env,

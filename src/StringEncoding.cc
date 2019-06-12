@@ -50,7 +50,7 @@ StringEncoding *StringEncodingClass::New(Napi::Env env, CFStringEncoding encodin
 	StringEncoding::ConstructorCookie cookie(encoding);
 	auto extCookie = Napi::External<StringEncoding::ConstructorCookie>::New(env, &cookie);
 	auto wrapper = constructor().New({ extCookie });
-	return *StringEncoding::Unwrap(wrapper);
+	return *Unwrap(wrapper, false);
 }
 
 StringEncoding::ConstructorCookie::ConstructorCookie(CFStringEncoding encoding)
@@ -94,8 +94,10 @@ StringEncoding::~StringEncoding() {
 	Napi::MemoryManagement::AdjustExternalMemory(Env(), -sizeof(StringEncoding));
 }
 
-std::optional<StringEncoding *> StringEncoding::Unwrap(Napi::Value wrapper) {
-	if (!wrapper.IsObject())
+std::optional<StringEncoding *> StringEncodingClass::Unwrap(Napi::Value wrapper, bool acceptStrings) const {
+	if (acceptStrings && wrapper.IsString())
+		return byIANACharSetName(wrapper.As<Napi::String>());
+	else if (!wrapper.IsObject())
 		return std::nullopt;
 
 	const auto env = wrapper.Env();
@@ -108,10 +110,18 @@ std::optional<StringEncoding *> StringEncoding::Unwrap(Napi::Value wrapper) {
 		napi_get_and_clear_last_exception(env, nullptr);
 		return std::nullopt;
 	}
-	else if (se == nullptr || se->magic != MAGIC)
+	else if (se == nullptr || se->magic != StringEncoding::MAGIC)
 		return std::nullopt;
 	else
 		return se;
+}
+
+StringEncoding *StringEncodingClass::UnwrapOrThrow(Napi::Value wrapper, bool acceptStrings) const {
+	auto opt = Unwrap(wrapper, acceptStrings);
+	if (opt)
+		return *opt;
+	else
+		throw iccf->newFormattedTypeError(wrapper.Env(), "a StringEncoding or IANA character set name", wrapper);
 }
 
 Napi::Buffer<uint8_t> StringEncoding::cfEncode(
@@ -180,17 +190,6 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value text) const {
 		throw _class->iccf->newInvalidEncodedTextError(env, text, Value());
 
 	return CFStringHandle(cfString);
-}
-
-StringEncoding *StringEncoding::UnwrapOrThrow(Iccf *iccf, Napi::Value wrapper) {
-	if (wrapper.IsString())
-		return iccf->StringEncoding.byIANACharSetName(wrapper.As<Napi::String>());
-
-	auto opt = StringEncoding::Unwrap(wrapper);
-	if (opt)
-		return *opt;
-
-	throw iccf->newFormattedTypeError(wrapper.Env(), "a StringEncoding or IANA character set name", wrapper);
 }
 
 std::optional<Napi::String> StringEncoding::ianaCharSetName(const Napi::Env &env) {

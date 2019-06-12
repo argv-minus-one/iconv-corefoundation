@@ -124,7 +124,7 @@ static Napi::Value transcode(const Napi::CallbackInfo &info) {
 	const auto env = info.Env();
 	const auto iccf = getIccf(info);
 	const EncodeOptions encodeOptions(info[3]);
-	const auto fromEncoding = StringEncoding::UnwrapOrThrow(iccf, info[1]), toEncoding = StringEncoding::UnwrapOrThrow(iccf, info[2]);
+	const auto fromEncoding = iccf->StringEncoding.UnwrapOrThrow(info[1]), toEncoding = iccf->StringEncoding.UnwrapOrThrow(info[2]);
 	const Napi::Value text = info[0];
 
 	return toEncoding->cfEncode(
@@ -169,7 +169,7 @@ static Napi::Value selectAndTranscode(
 		info[0],
 		DecodeOptions(info[2]),
 		EncodeOptions(info[2]),
-		StringEncoding::UnwrapOrThrow(iccf, info[1]),
+		iccf->StringEncoding.UnwrapOrThrow(info[1]),
 		[&] (auto cfString) {
 			return iccf->StringEncoding.New(env, selectToEncoding(cfString));
 		}
