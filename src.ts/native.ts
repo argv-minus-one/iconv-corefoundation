@@ -179,12 +179,12 @@ export declare function encodeSmallest(text: string, options: SelectAndEncodeOpt
  * Throws {@link NotRepresentableError} if the `text` cannot be fully represented in `toEncoding`, and `options` does not contain a `lossByte`.
  *
  * @param text - The encoded text to transcode.
- * @param fromEncoding - The encoding of the `text`.
- * @param toEncoding - The desired encoding.
+ * @param fromEncoding - The encoding of the `text`, as a {@link StringEncoding} or an IANA character set name.
+ * @param toEncoding - The desired encoding, as a {@link StringEncoding} or an IANA character set name.
  * @param options - Options for both decoding and encoding.
  * @returns The `text`, encoded in `toEncoding` instead of `fromEncoding`.
  */
-export declare function transcode(text: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
+export declare function transcode(text: BufferLike, fromEncoding: StringEncoding | string, toEncoding: StringEncoding | string, options?: DecodeOptions & EncodeOptions): Buffer;
 
 /**
  * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
@@ -193,11 +193,11 @@ export declare function transcode(text: BufferLike, fromEncoding: StringEncoding
  * Throws {@link InvalidEncodedTextError} if the `text` is not valid in `fromEncoding`.
  *
  * @param text - The text to encode.
- * @param fromEncoding - The encoding of the text.
+ * @param fromEncoding - The encoding of the text, as a {@link StringEncoding} or an IANA character set name.
  * @param options - Options for both decoding and encoding.
  * @returns The encoded text and chosen encoding.
  */
-export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
+export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding | string, options?: DecodeOptions & SelectAndEncodeOptions & { isEncodingOk?: never }): TextAndEncoding;
 
 /**
  * Converts encoded text from its current encoding to the smallest representation supported by Core Foundation.
@@ -206,11 +206,11 @@ export declare function transcodeSmallest(text: BufferLike, fromEncoding: String
  * Throws {@link InvalidEncodedTextError} if the `text` is not valid in `fromEncoding`.
  *
  * @param text - The text to encode.
- * @param fromEncoding - The encoding of the text.
+ * @param fromEncoding - The encoding of the text, as a {@link StringEncoding} or an IANA character set name.
  * @param options - Options for both decoding and encoding, possibly including an {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} method.
  * @returns If {@link SelectAndEncodeOptions.isEncodingOk | options.isEncodingOk} exists and returns `false`, this function returns `null`. Otherwise, this function returns the encoded text and chosen encoding.
  */
-export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
+export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding | string, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
 
 /**
  * Tests whether an encoding exists and is supported.

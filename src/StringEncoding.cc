@@ -183,12 +183,14 @@ CFStringHandle StringEncoding::cfDecode(Napi::Value text) const {
 }
 
 StringEncoding *StringEncoding::UnwrapOrThrow(Iccf *iccf, Napi::Value wrapper) {
-	auto opt = StringEncoding::Unwrap(wrapper);
+	if (wrapper.IsString())
+		return iccf->StringEncoding.byIANACharSetName(wrapper.As<Napi::String>());
 
+	auto opt = StringEncoding::Unwrap(wrapper);
 	if (opt)
 		return *opt;
-	else
-		throw iccf->newFormattedTypeError(wrapper.Env(), "a StringEncoding", wrapper);
+
+	throw iccf->newFormattedTypeError(wrapper.Env(), "a StringEncoding or IANA character set name", wrapper);
 }
 
 std::optional<Napi::String> StringEncoding::ianaCharSetName(const Napi::Env &env) {
@@ -264,14 +266,18 @@ Napi::Value StringEncoding::byCFStringEncoding(const Napi::CallbackInfo &info) {
 
 Napi::Value StringEncoding::byIANACharSetName(const Napi::CallbackInfo &info) {
 	const auto _class = StringEncodingClass::ForMethodCall(info);
-	auto jsEncodingName = info[0].As<Napi::String>();
-	auto encodingName = NapiStringToCFString(jsEncodingName);
-	auto encoding = CFStringConvertIANACharSetNameToEncoding(encodingName);
+	return _class->byIANACharSetName(info[0].As<Napi::String>())->Value();
+}
+
+StringEncoding *StringEncodingClass::byIANACharSetName(const Napi::String name) const {
+	const auto env = name.Env();
+	auto cfName = NapiStringToCFString(name);
+	auto encoding = CFStringConvertIANACharSetNameToEncoding(cfName);
 
 	if (encoding == kCFStringEncodingInvalidId)
-		throw _class->iccf->newUnrecognizedEncodingError(info.Env(), info[0], Iccf::EncodingSpecifierKind::IANACharSetName);
+		throw iccf->newUnrecognizedEncodingError(env, name, Iccf::EncodingSpecifierKind::IANACharSetName);
 	else
-		return _class->New(info.Env(), encoding)->Value();
+		return New(env, encoding);
 }
 
 Napi::Value StringEncoding::byWindowsCodepage(const Napi::CallbackInfo &info) {

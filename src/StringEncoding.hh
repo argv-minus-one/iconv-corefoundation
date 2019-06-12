@@ -22,6 +22,7 @@ class StringEncodingClass {
 	public:
 	StringEncodingClass(Napi::Env env, Iccf *iccf);
 	StringEncoding *New(Napi::Env env, CFStringEncoding encoding) const;
+	StringEncoding *byIANACharSetName(const Napi::String name) const;
 
 	inline Napi::Function constructor() const {
 		return _constructor.Value();

@@ -1,6 +1,7 @@
 import * as Chai from "chai";
 import { encodeSmallest, NotRepresentableError, SelectAndEncodeOptions, StringEncoding, TextAndEncoding, transcode, transcodeSmallest } from "..";
 import ChaiBytes = require("chai-bytes");
+import { inspect } from "util";
 
 Chai.use(ChaiBytes);
 const { assert } = Chai;
@@ -11,6 +12,16 @@ describe("transcode", () => {
 			Buffer.from("2 ÷ 2 = 1¶", "latin1"),
 			StringEncoding.byIANACharSetName("iso-8859-1"),
 			StringEncoding.byIANACharSetName("macintosh")
+		);
+
+		assert.equalBytes(result, Buffer.from("MiDWIDIgPSAxpg==", "base64"));
+	});
+
+	it("should accept IANA charset names", () => {
+		const result = transcode(
+			Buffer.from("2 ÷ 2 = 1¶", "latin1"),
+			"iso-8859-1",
+			"macintosh"
 		);
 
 		assert.equalBytes(result, Buffer.from("MiDWIDIgPSAxpg==", "base64"));
@@ -35,25 +46,15 @@ describe("transcode", () => {
 		), NotRepresentableError);
 	});
 
-	it("should throw TypeError when appropriate", () => {
-		assert.throws(() => transcode(
-			42 as any,
-			StringEncoding.byIANACharSetName("iso-8859-1"),
-			StringEncoding.byIANACharSetName("us-ascii")
-		), TypeError);
+	for (const from of [42, null, true, undefined, transcode, StringEncoding, Symbol.match]) {
+		it(`should reject ${inspect(from)} as an encoding parameter`, () => {
+			assert.throws(() => transcode(Buffer.alloc(0), from as any, "macintosh"), TypeError);
+		});
 
-		assert.throws(() => transcode(
-			Buffer.alloc(0),
-			"iso-8859-1" as any,
-			StringEncoding.byIANACharSetName("us-ascii")
-		), TypeError);
-
-		assert.throws(() => transcode(
-			Buffer.alloc(0),
-			StringEncoding.byIANACharSetName("iso-8859-1"),
-			"us-ascii" as any
-		), TypeError);
-	});
+		it(`should reject ${inspect(from)} as the encoded text parameter`, () => {
+			assert.throws(() => transcode(from as any, "iso-8859-1", "macintosh"), TypeError);
+		});
+	}
 });
 
 describe("encodeSmallest", () => {
