@@ -98,12 +98,20 @@ std::optional<StringEncoding *> StringEncoding::Unwrap(Napi::Value wrapper) {
 	if (!wrapper.IsObject())
 		return std::nullopt;
 
-	auto se = Napi::ObjectWrap<StringEncoding>::Unwrap(wrapper.As<Napi::Object>());
+	const auto env = wrapper.Env();
 
-	if (se != nullptr && se->magic != MAGIC)
+	StringEncoding *se;
+	auto status = napi_unwrap(env, wrapper, reinterpret_cast<void **>(&se));
+
+	if (status == napi_invalid_arg) {
+		// Clear the N-API pending exception. This function represents an incorrect type as std::nullopt, not an exception.
+		napi_get_and_clear_last_exception(env, nullptr);
 		return std::nullopt;
-
-	return se;
+	}
+	else if (se == nullptr || se->magic != MAGIC)
+		return std::nullopt;
+	else
+		return se;
 }
 
 Napi::Buffer<uint8_t> StringEncoding::cfEncode(
