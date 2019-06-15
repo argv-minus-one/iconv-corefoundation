@@ -9,7 +9,7 @@ Converts encoded text from its current encoding to the smallest representation s
 <b>Signature:</b>
 
 ```typescript
-export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
+export declare function transcodeSmallest(text: BufferLike, fromEncoding: StringEncoding | string, options: DecodeOptions & SelectAndEncodeOptions): TextAndEncoding | null;
 ```
 
 ## Parameters
@@ -17,7 +17,7 @@ export declare function transcodeSmallest(text: BufferLike, fromEncoding: String
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  text | <code>BufferLike</code> | The text to encode. |
-|  fromEncoding | <code>StringEncoding</code> | The encoding of the text. |
+|  fromEncoding | <code>StringEncoding &#124; string</code> | The encoding of the text, as a [StringEncoding](./iconv-corefoundation.stringencoding.md) or an IANA character set name. |
 |  options | <code>DecodeOptions &amp; SelectAndEncodeOptions</code> | Options for both decoding and encoding, possibly including an [options.isEncodingOk](./iconv-corefoundation.selectandencodeoptions.isencodingok.md) method. |
 
 <b>Returns:</b>

@@ -9,7 +9,7 @@ Converts encoded text from one encoding to another.
 <b>Signature:</b>
 
 ```typescript
-export declare function transcode(text: BufferLike, fromEncoding: StringEncoding, toEncoding: StringEncoding, options?: DecodeOptions & EncodeOptions): Buffer;
+export declare function transcode(text: BufferLike, fromEncoding: StringEncoding | string, toEncoding: StringEncoding | string, options?: DecodeOptions & EncodeOptions): Buffer;
 ```
 
 ## Parameters
@@ -17,8 +17,8 @@ export declare function transcode(text: BufferLike, fromEncoding: StringEncoding
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  text | <code>BufferLike</code> | The encoded text to transcode. |
-|  fromEncoding | <code>StringEncoding</code> | The encoding of the <code>text</code>. |
-|  toEncoding | <code>StringEncoding</code> | The desired encoding. |
+|  fromEncoding | <code>StringEncoding &#124; string</code> | The encoding of the <code>text</code>, as a [StringEncoding](./iconv-corefoundation.stringencoding.md) or an IANA character set name. |
+|  toEncoding | <code>StringEncoding &#124; string</code> | The desired encoding, as a [StringEncoding](./iconv-corefoundation.stringencoding.md) or an IANA character set name. |
 |  options | <code>DecodeOptions &amp; EncodeOptions</code> | Options for both decoding and encoding. |
 
 <b>Returns:</b>
