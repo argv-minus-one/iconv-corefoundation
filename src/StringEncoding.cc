@@ -5,8 +5,8 @@
 #include <optional>
 #include <stdexcept>
 
-const void *StringEncodingClass::MAGIC = &StringEncodingClass::MAGIC;
-const void *StringEncoding::MAGIC = &StringEncoding::MAGIC;
+const void * const StringEncodingClass::MAGIC = &StringEncodingClass::MAGIC;
+const void * const StringEncoding::MAGIC = &StringEncoding::MAGIC;
 static constexpr const char *CLASS_DATA_KEY = "__native_class_data";
 
 StringEncodingClass::StringEncodingClass(Napi::Env env, Iccf *iccf)

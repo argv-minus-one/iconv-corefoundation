@@ -10,11 +10,11 @@ struct Iccf;
 class StringEncoding;
 
 class StringEncodingClass {
-	static const void *MAGIC;
-	const void *magic;
+	static const void * const MAGIC;
+	const void * const magic;
 
 	public:
-	const Iccf *iccf;
+	const Iccf * const iccf;
 
 	private:
 	const Napi::FunctionReference _constructor;
@@ -37,8 +37,8 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	friend class StringEncodingClass;
 	friend class Napi::ObjectWrap<StringEncoding>;
 
-	static const void *MAGIC;
-	const void *magic;
+	static const void * const MAGIC;
+	const void * const magic;
 
 	Napi::Value ianaCharSetName(const Napi::CallbackInfo &info);
 	Napi::Value windowsCodepage(const Napi::CallbackInfo &info);
@@ -68,7 +68,7 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	};
 
 	public:
-	const StringEncodingClass *_class;
+	const StringEncodingClass * const _class;
 	const CFStringEncoding _cfStringEncoding;
 
 	inline operator CFStringEncoding() const {
