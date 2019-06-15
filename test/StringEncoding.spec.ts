@@ -196,6 +196,32 @@ describe("StringEncoding", () => {
 		});
 	});
 
+	describe("#equals", () => {
+		it("should return true for the same encoding", () => {
+			const a = StringEncoding.byCFStringEncoding(0);
+			const b = StringEncoding.byIANACharSetName("macintosh");
+			assert.isTrue(a.equals(b));
+			assert.isTrue(b.equals(a));
+		});
+
+		it("should return false for a different encoding", () => {
+			const a = StringEncoding.byCFStringEncoding(0);
+			const b = StringEncoding.byCFStringEncoding(1);
+			assert.isFalse(a.equals(b));
+			assert.isFalse(b.equals(a));
+		});
+
+		it("should return false for non-StringEncoding parameters", () => {
+			const a = StringEncoding.byCFStringEncoding(0);
+			assert.isFalse(a.equals("macintosh" as any));
+			assert.isFalse(a.equals(42 as any));
+			assert.isFalse(a.equals(null as any));
+			assert.isFalse(a.equals(true as any));
+			assert.isFalse(a.equals(undefined as any));
+			assert.isFalse(a.equals(StringEncoding as any));
+		});
+	});
+
 	it("shouldn't choke on null bytes", () => {
 		const ascii = StringEncoding.byIANACharSetName("us-ascii");
 		const encoded = ascii.encode("\0Hello\0world");

@@ -8,6 +8,21 @@ module.exports = require("./native.node")({
 	...errors
 });
 
+{
+	const _StringEncoding: typeof StringEncoding = module.exports.StringEncoding;
+
+	Object.defineProperties(_StringEncoding.prototype, {
+		equals: {
+			value: function equals(this: StringEncoding, other: unknown): boolean {
+				return this === other || (other instanceof _StringEncoding && (
+					this.cfStringEncoding === other.cfStringEncoding ||
+					this.name === other.name
+				));
+			}
+		}
+	});
+}
+
 /** Supported representations of encoded text. */
 export type BufferLike = Buffer | Uint8Array | DataView | ArrayBufferLike;
 
@@ -74,6 +89,14 @@ export declare class StringEncoding {
 	 * @returns The decoded text, as a string.
 	 */
 	decode(text: BufferLike, options?: DecodeOptions): string;
+
+	/**
+	 * Returns whether the given {@link StringEncoding} represents the same encoding as this one.
+	 *
+	 * @remarks
+	 * The Core Foundation framework doesn't have a corresponding function. Instead, this method is implemented by comparing the {@link StringEncoding.cfStringEncoding | cfStringEncoding} and {@link StringEncoding.name | name} properties.
+	 */
+	equals(other: StringEncoding): boolean;
 
 	/**
 	 * Encodes the given text.

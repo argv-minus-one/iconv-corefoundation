@@ -33,6 +33,7 @@ export declare class StringEncoding
 |  [byWindowsCodepage(codepage)](./iconv-corefoundation.stringencoding.bywindowscodepage.md) | <code>static</code> | Looks up a [StringEncoding](./iconv-corefoundation.stringencoding.md) by corresponding Windows codepage. |
 |  [decode(text, options)](./iconv-corefoundation.stringencoding.decode.md) |  | Decodes the given text. |
 |  [encode(text, options)](./iconv-corefoundation.stringencoding.encode.md) |  | Encodes the given text. |
+|  [equals(other)](./iconv-corefoundation.stringencoding.equals.md) |  | Returns whether the given [StringEncoding](./iconv-corefoundation.stringencoding.md) represents the same encoding as this one. |
 
 ## Remarks
 
