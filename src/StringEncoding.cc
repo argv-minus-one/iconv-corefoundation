@@ -1,6 +1,7 @@
 #include "StringEncoding.hh"
 #include "string-utils.hh"
 #include "transcode.hh"
+#include "napi_type_tag.h"
 #include <sstream>
 #include <optional>
 #include <stdexcept>
@@ -88,6 +89,9 @@ StringEncoding::StringEncoding(const Napi::CallbackInfo &info)
 	);
 
 	Napi::MemoryManagement::AdjustExternalMemory(info.Env(), sizeof(StringEncoding));
+
+	if (napi_type_tag_object != nullptr)
+		napi_type_tag_object(info.Env(), info.This(), MAGIC);
 }
 
 StringEncoding::~StringEncoding() {
@@ -102,6 +106,13 @@ std::optional<StringEncoding *> StringEncodingClass::Unwrap(Napi::Value wrapper,
 
 	const auto env = wrapper.Env();
 
+	if (napi_check_object_type_tag != nullptr) {
+		bool correctType;
+		throwIfFailed(env, napi_check_object_type_tag(env, wrapper, StringEncoding::MAGIC, &correctType));
+		if (!correctType)
+			return std::nullopt;
+	}
+
 	StringEncoding *se;
 	auto status = napi_unwrap(env, wrapper, reinterpret_cast<void **>(&se));
 
@@ -110,7 +121,7 @@ std::optional<StringEncoding *> StringEncodingClass::Unwrap(Napi::Value wrapper,
 		napi_get_and_clear_last_exception(env, nullptr);
 		return std::nullopt;
 	}
-	else if (se == nullptr || se->magic != StringEncoding::MAGIC)
+	else if (se == nullptr || (napi_check_object_type_tag == nullptr && se->magic != StringEncoding::MAGIC))
 		return std::nullopt;
 	else
 		return se;
