@@ -222,6 +222,12 @@ describe("StringEncoding", () => {
 		});
 	});
 
+	it("should have its special instanceof behavior", () => {
+		assert.instanceOf(StringEncoding.system, StringEncoding);
+		assert.notInstanceOf({}, StringEncoding);
+		assert.notInstanceOf(Object.create(StringEncoding.prototype), StringEncoding);
+	});
+
 	it("shouldn't choke on null bytes", () => {
 		const ascii = StringEncoding.byIANACharSetName("us-ascii");
 		const encoded = ascii.encode("\0Hello\0world");

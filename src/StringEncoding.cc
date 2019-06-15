@@ -25,6 +25,7 @@ StringEncodingClass::StringEncodingClass(Napi::Env env, Iccf *iccf)
 		StringEncoding::StaticMethod("byIANACharSetName", &StringEncoding::byIANACharSetName, napi_default, this),
 		StringEncoding::StaticMethod("byWindowsCodepage", &StringEncoding::byWindowsCodepage, napi_default, this),
 		StringEncoding::StaticMethod("byNSStringEncoding", &StringEncoding::byNSStringEncoding, napi_default, this),
+		StringEncoding::StaticMethod(Napi::Symbol::WellKnown(env, "hasInstance"), &StringEncoding::hasInstance, napi_default, this),
 		StringEncoding::StaticAccessor("system", &StringEncoding::system, nullptr, napi_enumerable, this)
 	}, this);
 
@@ -316,4 +317,10 @@ Napi::Value StringEncoding::byNSStringEncoding(const Napi::CallbackInfo &info) {
 Napi::Value StringEncoding::system(const Napi::CallbackInfo &info) {
 	const auto _class = StringEncodingClass::ForMethodCall(info);
 	return _class->New(info.Env(), CFStringGetSystemEncoding())->Value();
+}
+
+Napi::Value StringEncoding::hasInstance(const Napi::CallbackInfo &info) {
+	const auto _class = StringEncodingClass::ForMethodCall(info);
+	auto unwrapped = _class->Unwrap(info[0], false);
+	return Napi::Boolean::From(info.Env(), unwrapped.has_value());
 }

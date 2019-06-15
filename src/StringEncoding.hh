@@ -53,6 +53,7 @@ class StringEncoding : public Napi::ObjectWrap<StringEncoding> {
 	static Napi::Value byWindowsCodepage(const Napi::CallbackInfo &info);
 	static Napi::Value byNSStringEncoding(const Napi::CallbackInfo &info);
 	static Napi::Value system(const Napi::CallbackInfo &info);
+	static Napi::Value hasInstance(const Napi::CallbackInfo &info);
 
 	StringEncoding(const Napi::CallbackInfo &info);
 	~StringEncoding();
