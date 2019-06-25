@@ -10,6 +10,7 @@ export class NotRepresentableError extends Error {
 		super(`Not fully representable in ${encoding}:\n${inspect(typeof text === "string" ? cliTruncate(text, 65) : text)}`);
 	}
 }
+NotRepresentableError.prototype.name = NotRepresentableError.name;
 
 /**
  * Signals that the given encoded text is not valid in the chosen {@link StringEncoding}.
@@ -22,6 +23,7 @@ export class InvalidEncodedTextError extends Error {
 		super(`Input is not valid ${encoding}:\n${inspect(text)}`);
 	}
 }
+InvalidEncodedTextError.prototype.name = InvalidEncodedTextError.name;
 
 const specifierKinds = [
 	"CFStringEncoding",
@@ -39,3 +41,4 @@ export class UnrecognizedEncodingError extends Error {
 		super(`Unrecognized ${specifierKind}: ${inspect(encodingSpecifier)}`);
 	}
 }
+UnrecognizedEncodingError.prototype.name = UnrecognizedEncodingError.name;
