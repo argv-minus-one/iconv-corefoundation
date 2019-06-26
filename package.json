@@ -7,7 +7,8 @@
 	"scripts": {
 		"prepare": "tsc && make -f native.mk",
 		"test": "mocha -r ts-node/register test/**.spec.ts",
-		"docs": "api-extractor run && api-documenter markdown --input-folder temp --output-folder docs && ln -s iconv-corefoundation.md docs/index.md"
+		"docs": "api-extractor run && api-documenter markdown --input-folder temp --output-folder docs && ln -s iconv-corefoundation.md docs/index.md",
+		"prepublishOnly": "npm test"
 	},
 	"repository": "argv-minus-one/iconv-corefoundation",
 	"keywords": [
