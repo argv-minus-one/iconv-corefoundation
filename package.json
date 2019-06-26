@@ -1,6 +1,6 @@
 {
 	"name": "iconv-corefoundation",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Character set conversion using the macOS CoreFoundation API",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
