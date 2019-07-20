@@ -1,9 +1,12 @@
 import * as Chai from "chai";
-import { encodingExists } from "..";
+import { encode, encodingExists } from "..";
 import ChaiBytes = require("chai-bytes");
 
 Chai.use(ChaiBytes);
 const { assert } = Chai;
+
+// Check for segfaults in native finalizers.
+afterEach(global.gc);
 
 describe("encodingExists", () => {
 	it("should return true for encodings that exist", () => {

@@ -6,6 +6,9 @@ import { inspect } from "util";
 Chai.use(ChaiBytes);
 const { assert } = Chai;
 
+// Check for segfaults in native finalizers.
+afterEach(global.gc);
+
 describe("transcode", () => {
 	it("should correctly transcode", () => {
 		const result = transcode(

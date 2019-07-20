@@ -6,6 +6,9 @@ import ChaiBytes = require("chai-bytes");
 Chai.use(ChaiBytes);
 const { assert } = Chai;
 
+// Check for segfaults in native finalizers.
+afterEach(global.gc);
+
 describe("StringEncoding", () => {
 	{
 		const testEncodings: Array<{

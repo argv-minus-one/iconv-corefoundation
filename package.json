@@ -6,7 +6,7 @@
 	"types": "lib/index.d.ts",
 	"scripts": {
 		"prepare": "tsc && make -f native.mk",
-		"test": "mocha -r ts-node/register test/**.spec.ts",
+		"test": "node -r ts-node/register --expose-gc node_modules/.bin/_mocha test/**.spec.ts",
 		"docs": "api-extractor run && api-documenter markdown --input-folder temp --output-folder docs && ln -s iconv-corefoundation.md docs/index.md",
 		"prepublishOnly": "npm test"
 	},
