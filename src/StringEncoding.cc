@@ -4,6 +4,7 @@
 #include <sstream>
 #include <optional>
 #include <stdexcept>
+#include <limits>
 
 const void * const StringEncodingClass::MAGIC = &StringEncodingClass::MAGIC;
 const void * const StringEncoding::MAGIC = &StringEncoding::MAGIC;
@@ -131,23 +132,47 @@ Napi::Buffer<uint8_t> StringEncoding::cfEncode(
 	UInt8 lossByte,
 	std::function<Napi::Value(CFStringRef, Napi::Env)> origString
 ) const {
-	auto data = CFStringCreateExternalRepresentation(kCFAllocatorMalloc, text, _cfStringEncoding, lossByte);
+	class NotRepr {};
 
-	if (data == nullptr)
+	try {
+		auto const strLength = CFStringGetLength(text);
+		CFIndex bytesConverted, charsConverted;
+
+		charsConverted = CFStringGetBytes(
+			text,
+			{ 0, strLength },
+			_cfStringEncoding,
+			lossByte,
+			true,
+			nullptr,
+			std::numeric_limits<size_t>::max(),
+			&bytesConverted
+		);
+
+		if (charsConverted != strLength)
+			throw NotRepr();
+
+		auto const buf = Napi::Buffer<uint8_t>::New(env, bytesConverted);
+
+		charsConverted = CFStringGetBytes(
+			text,
+			{ 0, strLength },
+			_cfStringEncoding,
+			lossByte,
+			true,
+			buf.Data(),
+			bytesConverted,
+			nullptr
+		);
+
+		if (charsConverted != strLength)
+			throw NotRepr();
+
+		return buf;
+	}
+	catch (NotRepr) {
 		throw _class->iccf->newNotRepresentableError(env, origString(text, env), Value());
-
-	const auto length = CFDataGetLength(data);
-
-	// We're going to be doing a naughty here. Although CFData is supposed to be immutable, we're going to be using its memory as the backing store of a JavaScript ArrayBuffer, which *is* mutable. Behavior is undefined when we do this. It is allocated using plain malloc (to keep it off any special CF/GC/ObjC/Cocoa/whatever heap), so this hopefully won't break anything. Hopefully. Probably. It'd be nice if CFString could write its external representation to a CFMutableData...
-
-	return Napi::Buffer<uint8_t>::New(
-		env,
-		const_cast<UInt8 *>(CFDataGetBytePtr(data)),
-		length,
-		[] (auto env, auto object) noexcept {
-			CFRelease(object);
-		}
-	);
+	}
 }
 
 CFStringHandle StringEncoding::cfDecode(Napi::Value text) const {
